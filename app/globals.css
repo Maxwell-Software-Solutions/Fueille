@@ -169,3 +169,12 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Logo light green color filter for dark mode compatibility */
+.logo-light-green {
+  filter: brightness(0) saturate(100%) invert(88%) sepia(12%) saturate(1445%) hue-rotate(55deg) brightness(100%) contrast(90%);
+}
+
+.dark .logo-light-green {
+  filter: brightness(0) saturate(100%) invert(88%) sepia(12%) saturate(1445%) hue-rotate(55deg) brightness(110%) contrast(100%);
+}

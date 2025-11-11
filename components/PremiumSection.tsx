@@ -51,7 +51,7 @@ export function PremiumSection() {
           </p>
         </div>
         <div className="px-4 py-2 neu-pressed rounded-lg">
-          <span className="text-sm font-semibold gradient-text">Coming Soon</span>
+          <span className="text-sm font-semibold gradient-text whitespace-nowrap">Coming Soon</span>
         </div>
       </div>
 
@@ -79,7 +79,7 @@ export function PremiumSection() {
         <p className="text-base text-muted-foreground mb-5">
           Be the first to know when premium features launch
         </p>
-        <Button size="lg" disabled className="opacity-50 cursor-not-allowed">
+        <Button size="lg" disabled className="opacity-50 cursor-not-allowed whitespace-nowrap">
           Join Waitlist (Coming Soon)
         </Button>
       </Card>

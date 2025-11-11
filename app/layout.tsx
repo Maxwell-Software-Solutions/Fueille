@@ -71,15 +71,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${inter.className} flex min-h-screen flex-col`}>
         <ErrorBoundary>
           <header className="neu-flat border-b border-border/30">
-            <div className="container mx-auto px-6 py-6 flex items-center justify-between max-w-7xl">
+            <div className="container mx-auto px-6 py-3 flex items-center justify-between max-w-7xl">
               <Link
                 href="/"
-                className="flex items-center gap-5 cursor-pointer hover:opacity-80 transition-opacity"
+                className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo.svg" alt="Fueille Logo" className="h-24 w-24" />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/title.svg" alt="Fueille" className="h-18" />
+                <img src="/logo.svg" alt="Fueille Logo" className="h-12 w-12 logo-light-green" />
+                <h1
+                  className="text-3xl font-bold tracking-tight"
+                  style={{
+                    background: 'linear-gradient(to right, #90EE90, #228B22)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}
+                >
+                  Fueille
+                </h1>
               </Link>
               <ThemeToggle />
             </div>
