@@ -3,6 +3,11 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import AiInlineRequest from '@/components/AiInlineRequest';
 import Footer from '@/components/Footer';
+import dynamic from 'next/dynamic';
+
+const ServiceWorkerRegister = dynamic(() => import('@/components/ServiceWorkerRegister'), {
+  ssr: false,
+});
 
 const inter = Inter({
   subsets: ['latin'],
@@ -38,11 +43,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="h-full">
       <body className={`${inter.className} flex min-h-screen flex-col`}>
-        <div className="flex-1">
-          {children}
-        </div>
+        <div className="flex-1">{children}</div>
         <Footer />
         {showInlineAI && <AiInlineRequest />}
+        {/* Service worker registration for PWA + mobile wrapper bridge hookup */}
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Fueille Mobile Wrapper Host</title>
+  </head>
+  <body style="margin:0;height:100vh;">
+    <!-- This simple host can be used inside a native WebView. Change the src to the built app URL. -->
+    <iframe id="app" src="/" style="border:0;width:100%;height:100%"></iframe>
+    <script>
+      // Example: provide a test NativePlantBridge for manual testing in browser
+      if (!window.NativePlantBridge) {
+        window.NativePlantBridge = {
+          async takePhoto() {
+            return { canceled: true };
+          },
+          async pickImage() {
+            return { canceled: true };
+          },
+          async scheduleNotification() {
+            return { scheduled: false };
+          }
+        };
+      }
+    </script>
+  </body>
+</html>
