@@ -1,11 +1,11 @@
 {
-  "name": "Vercel Spine - Next.js Full-Stack Template",
-  "short_name": "Vercel Spine",
-  "description": "Production-ready Next.js template with GraphQL, Prisma, and comprehensive testing",
+  "name": "Plant Tracker - Care for Your Plants",
+  "short_name": "Plant Tracker",
+  "description": "Track your plants and care tasks offline-first",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "theme_color": "#22c55e",
   "orientation": "portrait-primary",
   "icons": [
     {

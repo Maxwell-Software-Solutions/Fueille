@@ -1,0 +1,17 @@
+/**
+ * Domain Layer - Entities, Repositories, and Services
+ * Provides offline-first data access for the Plant Tracking app
+ */
+
+// Core entities and types
+export * from './entities';
+
+// Database
+export { getDatabase, initDatabase, clearDatabase, getDb } from './database';
+
+// Repositories
+export { plantRepository, PlantRepository } from './repositories/PlantRepository';
+export { careTaskRepository, CareTaskRepository } from './repositories/CareTaskRepository';
+
+// Services
+export { mutationQueueService, MutationQueueService } from './services/MutationQueueService';

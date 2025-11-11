@@ -9,6 +9,10 @@ const ServiceWorkerRegister = dynamic(() => import('@/components/ServiceWorkerRe
   ssr: false,
 });
 
+const DatabaseInitializer = dynamic(() => import('@/components/DatabaseInitializer'), {
+  ssr: false,
+});
+
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
@@ -19,13 +23,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Vercel Spine - Next.js Full-Stack Template',
-  description: 'Enterprise-ready Next.js template with GraphQL, Prisma, and comprehensive testing',
+  title: 'Plant Tracker - Care for Your Plants',
+  description: 'Track your plants and care tasks with offline-first app',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Vercel Spine',
+    title: 'Plant Tracker',
   },
 };
 
@@ -48,6 +52,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {showInlineAI && <AiInlineRequest />}
         {/* Service worker registration for PWA + mobile wrapper bridge hookup */}
         <ServiceWorkerRegister />
+        {/* Initialize IndexedDB for offline-first data */}
+        <DatabaseInitializer />
       </body>
     </html>
   );
