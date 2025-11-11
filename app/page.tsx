@@ -92,7 +92,7 @@ export default function Home() {
   return (
     <main className="container mx-auto px-6 py-8 max-w-7xl" suppressHydrationWarning>
       {showWelcome && (
-        <div className="mb-10 transition-opacity duration-500">
+        <div className="mb-8 transition-opacity duration-500">
           <h1 className="text-3xl font-bold mb-3">Welcome to Fueille</h1>
           <p className="text-base text-muted-foreground">Keep your plants healthy and thriving</p>
         </div>
@@ -100,7 +100,7 @@ export default function Home() {
 
       <NotificationSetup />
 
-      <div className="grid md:grid-cols-2 gap-6 mb-10">
+      <div className="grid md:grid-cols-2 gap-6 mb-8">
         <Link href="/plants">
           <Card className="p-6 neu-interactive cursor-pointer hover:neu-floating">
             <div className="flex items-center gap-5">
@@ -136,12 +136,12 @@ export default function Home() {
       </div>
 
       {dueTasks.length === 0 ? (
-        <Card className="p-10 text-center">
+        <Card className="p-10 text-center mb-8">
           <p className="text-xl font-semibold mb-2">✨ All caught up!</p>
           <p className="text-base text-muted-foreground">No tasks due today</p>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 mb-8">
           {dueTasks.map((task) => {
             const isOverdue = task.dueAt && new Date(task.dueAt) < new Date();
 

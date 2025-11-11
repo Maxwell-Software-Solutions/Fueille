@@ -42,7 +42,7 @@ export function PremiumSection() {
   ];
 
   return (
-    <div className="mb-10">
+    <div className="mt-8">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold mb-2">Premium Features</h2>
@@ -55,7 +55,7 @@ export function PremiumSection() {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         {premiumFeatures.map((feature) => (
           <Card
             key={feature.title}
@@ -74,7 +74,7 @@ export function PremiumSection() {
         ))}
       </div>
 
-      <Card className="mt-6 p-8 text-center neu-raised">
+      <Card className="p-8 text-center neu-raised">
         <h3 className="text-xl font-bold mb-3">Want early access?</h3>
         <p className="text-base text-muted-foreground mb-5">
           Be the first to know when premium features launch

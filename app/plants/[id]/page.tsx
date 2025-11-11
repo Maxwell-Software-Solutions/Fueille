@@ -115,7 +115,7 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
         </Button>
       </div>
 
-      <Card className="p-6 mb-6">
+      <Card className="p-6 mb-8">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-start gap-4">
             <div className="w-20 h-20 bg-green-100 rounded-lg flex items-center justify-center">
@@ -147,14 +147,14 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
       </div>
 
       {tasks.length === 0 ? (
-        <Card className="p-8 text-center">
+        <Card className="p-8 text-center mb-8">
           <p className="text-muted-foreground mb-4">No care tasks yet</p>
           <Button onClick={() => router.push(`/plants/${plant.id}/tasks/new`)}>
             Add First Task
           </Button>
         </Card>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 mb-8">
           {tasks.map((task) => {
             const isOverdue = task.dueAt && !task.completedAt && new Date(task.dueAt) < new Date();
             const isDue =
@@ -211,7 +211,7 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
         </div>
       )}
 
-      <div className="mt-8 mb-4 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between">
         <h2 className="text-2xl font-bold">Photos</h2>
         <Button onClick={() => setShowPhotoCapture(!showPhotoCapture)}>
           {showPhotoCapture ? 'Cancel' : '+ Add Photo'}
