@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { NotificationSetup } from '@/components/NotificationSetup';
+import { PremiumSection } from '@/components/PremiumSection';
 
 export default function Home() {
   const [dueTasks, setDueTasks] = useState<Array<CareTask & { plant?: Plant }>>([]);
@@ -186,6 +187,8 @@ export default function Home() {
           })}
         </div>
       )}
+
+      <PremiumSection />
     </main>
   );
 }

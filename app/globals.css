@@ -9,13 +9,13 @@ html {
 body {
   color: #000;
   background: #e0e5ec;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-@media (prefers-color-scheme: dark) {
-  body {
-    color: #fff;
-    background: #2c3e50;
-  }
+/* Dark mode overrides */
+.dark body {
+  color: #fff;
+  background: #2c3e50;
 }
 
 /* Neumorphic Design System */

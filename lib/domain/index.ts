@@ -17,3 +17,11 @@ export { photoRepository, PhotoRepository } from './repositories/PhotoRepository
 // Services
 export { mutationQueueService, MutationQueueService } from './services/MutationQueueService';
 export { notificationScheduler, NotificationScheduler } from './services/NotificationScheduler';
+export { deepLinkService, DeepLinkService } from './services/DeepLinkService';
+export type { DeepLink, DeepLinkType } from './services/DeepLinkService';
+export { telemetry, TelemetryService } from './services/TelemetryService';
+export type {
+  TelemetryEvent,
+  TelemetryProvider,
+  TelemetryProperties,
+} from './services/TelemetryService';

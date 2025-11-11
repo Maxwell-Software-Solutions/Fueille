@@ -3,44 +3,56 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 
-type Theme = 'light' | 'dark' | 'system';
+type Theme = 'light' | 'dark';
 
 /**
  * Dark mode toggle component
- * Respects system preference and persists user choice
+ * Uses system preference as default, allows manual toggle between light/dark
  */
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>('system');
+  const [theme, setTheme] = useState<Theme>('light');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
 
-    // Load saved theme from localStorage
+    // Check if user has a saved preference
     const savedTheme = localStorage.getItem('theme') as Theme | null;
+
     if (savedTheme) {
+      // Use saved preference
       setTheme(savedTheme);
       applyTheme(savedTheme);
     } else {
-      // Default to system preference
-      applyTheme('system');
+      // Use system preference as default
+      const systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light';
+      setTheme(systemPreference);
+      applyTheme(systemPreference);
     }
+
+    // Listen for system theme changes (only if no saved preference)
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      if (!localStorage.getItem('theme')) {
+        const newTheme = e.matches ? 'dark' : 'light';
+        setTheme(newTheme);
+        applyTheme(newTheme);
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
   const applyTheme = (newTheme: Theme) => {
     const root = document.documentElement;
-
-    if (newTheme === 'system') {
-      const systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light';
-      root.classList.toggle('dark', systemPreference === 'dark');
-    } else {
-      root.classList.toggle('dark', newTheme === 'dark');
-    }
+    root.classList.toggle('dark', newTheme === 'dark');
   };
 
-  const handleThemeChange = (newTheme: Theme) => {
+  const toggleTheme = () => {
+    const newTheme: Theme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
     localStorage.setItem('theme', newTheme);
     applyTheme(newTheme);
@@ -48,38 +60,18 @@ export function ThemeToggle() {
 
   // Prevent hydration mismatch
   if (!mounted) {
-    return <div className="w-9 h-9" />;
+    return <div className="w-11 h-11" />;
   }
 
   return (
-    <div className="flex items-center gap-1 neu-pressed rounded-xl p-1">
-      <Button
-        variant={theme === 'light' ? 'default' : 'ghost'}
-        size="sm"
-        onClick={() => handleThemeChange('light')}
-        className="px-3 h-9 rounded-lg"
-        aria-label="Light mode"
-      >
-        ☀️
-      </Button>
-      <Button
-        variant={theme === 'system' ? 'default' : 'ghost'}
-        size="sm"
-        onClick={() => handleThemeChange('system')}
-        className="px-3 h-9 rounded-lg"
-        aria-label="System theme"
-      >
-        💻
-      </Button>
-      <Button
-        variant={theme === 'dark' ? 'default' : 'ghost'}
-        size="sm"
-        onClick={() => handleThemeChange('dark')}
-        className="px-3 h-9 rounded-lg"
-        aria-label="Dark mode"
-      >
-        🌙
-      </Button>
-    </div>
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleTheme}
+      className="neu-pressed rounded-xl hover:neu-floating transition-all"
+      aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+    >
+      <span className="text-2xl">{theme === 'light' ? '🌙' : '☀️'}</span>
+    </Button>
   );
 }

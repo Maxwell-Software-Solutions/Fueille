@@ -1,8 +1,10 @@
 import { careTaskRepository, type CareTask } from '@/lib/domain';
+import { deepLinkService } from './DeepLinkService';
 
 /**
  * Service for scheduling browser notifications for care tasks
  * Uses Web Notifications API with permission handling
+ * Supports deep linking for mobile platforms
  */
 export class NotificationScheduler {
   private permission: NotificationPermission = 'default';
@@ -90,23 +92,38 @@ export class NotificationScheduler {
     }
 
     try {
+      // Try native bridge first (mobile)
+      if (window.NativePlantBridge?.scheduleNotification) {
+        const deepLink = deepLinkService.createDeepLink('plant', task.plantId);
+        window.NativePlantBridge.scheduleNotification({
+          id: task.id,
+          title: '🌱 Plant Care Reminder',
+          body: `Time to ${task.taskType}: ${task.title}`,
+          at: new Date(task.dueAt!).toISOString(),
+          data: { deepLink },
+        });
+        return;
+      }
+
+      // Fallback to web notifications
       const notification = new Notification(`🌱 Plant Care Reminder`, {
         body: `Time to ${task.taskType}: ${task.title}`,
         icon: '/icons/icon-192.png',
         badge: '/icons/icon-192.png',
         tag: task.id, // Prevents duplicate notifications
         requireInteraction: true, // Keeps notification visible until user acts
+        data: { taskId: task.id, plantId: task.plantId }, // Store for click handling
       });
 
       // Auto-close after 10 seconds if not interacted with
       setTimeout(() => notification.close(), 10000);
 
-      // Handle notification click
+      // Handle notification click - navigate via deep link
       notification.onclick = () => {
         window.focus();
-        // Navigate to task's plant page
-        if (task.plantId) {
-          window.location.href = `/plants/${task.plantId}`;
+        const deepLink = deepLinkService.parseDeepLink(`/plants/${task.plantId}`);
+        if (deepLink) {
+          deepLinkService.navigate(deepLink);
         }
         notification.close();
       };

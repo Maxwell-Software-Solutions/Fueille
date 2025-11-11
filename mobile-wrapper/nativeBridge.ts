@@ -11,7 +11,10 @@ export interface NativePlantBridge {
     title: string;
     body?: string;
     at?: string;
+    data?: Record<string, any>;
   }) => Promise<{ scheduled: boolean }>;
+  registerDeepLinkHandler?: (handler: (url: string) => void) => void;
+  triggerBackgroundSync?: () => Promise<void>;
 }
 
 declare global {
@@ -98,6 +101,14 @@ if (typeof window !== 'undefined' && !window.NativePlantBridge) {
           'NativePlantBridge.scheduleNotification not implemented - use Web Notifications API'
         );
         return { scheduled: false };
+      },
+      registerDeepLinkHandler(handler) {
+        console.warn('NativePlantBridge.registerDeepLinkHandler not implemented on web');
+        // Web can still handle navigation via router
+      },
+      async triggerBackgroundSync() {
+        console.warn('NativePlantBridge.triggerBackgroundSync not implemented on web');
+        // Web uses service worker background sync
       },
     };
   }
