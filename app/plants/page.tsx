@@ -58,8 +58,21 @@ export default function PlantsPage() {
             <Link key={plant.id} href={`/plants/${plant.id}`}>
               <Card className="p-5 neu-interactive cursor-pointer hover:neu-floating h-full">
                 <div className="flex items-start gap-4">
-                  <div className="w-16 h-16 neu-pressed rounded-2xl flex items-center justify-center flex-shrink-0">
-                    <span className="text-3xl">🌱</span>
+                  <div
+                    className={`w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden ${
+                      plant.thumbnailUrl ? '' : 'neu-pressed'
+                    }`}
+                  >
+                    {plant.thumbnailUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={plant.thumbnailUrl}
+                        alt={plant.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-3xl">🌱</span>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-lg truncate mb-1">{plant.name}</h3>
@@ -67,12 +80,19 @@ export default function PlantsPage() {
                       <p className="text-sm text-muted-foreground truncate">{plant.species}</p>
                     )}
                     {plant.location && (
-                      <p className="text-xs text-muted-foreground mt-2">📍 {plant.location}</p>
+                      <p className="text-xs text-muted-foreground mt-2 truncate">
+                        📍 {plant.location}
+                      </p>
                     )}
                   </div>
                 </div>
                 {plant.notes && (
-                  <p className="text-sm text-muted-foreground mt-4 line-clamp-2">{plant.notes}</p>
+                  <p
+                    className="text-sm text-muted-foreground mt-4 line-clamp-2 break-words"
+                    style={{ overflowWrap: 'anywhere' }}
+                  >
+                    {plant.notes}
+                  </p>
                 )}
               </Card>
             </Link>

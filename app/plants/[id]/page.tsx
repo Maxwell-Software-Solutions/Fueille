@@ -21,6 +21,14 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [showPhotoCapture, setShowPhotoCapture] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isEditingDetails, setIsEditingDetails] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    species: '',
+    location: '',
+    notes: '',
+  });
 
   const loadPlantData = useCallback(async () => {
     try {
@@ -47,6 +55,17 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
     loadPlantData();
   }, [loadPlantData]);
 
+  useEffect(() => {
+    if (plant && isEditingDetails) {
+      setEditFormData({
+        name: plant.name,
+        species: plant.species || '',
+        location: plant.location || '',
+        notes: plant.notes || '',
+      });
+    }
+  }, [plant, isEditingDetails]);
+
   const handleDelete = async () => {
     if (!confirm('Delete this plant? This cannot be undone.')) return;
 
@@ -70,16 +89,41 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
 
   const handlePhotoCapture = async (dataUrl: string) => {
     try {
-      await photoRepository.create({
+      const photo = await photoRepository.create({
         plantId: params.id,
         localUri: dataUrl,
         takenAt: new Date(),
       });
+
+      // If this is the first photo, set it as the plant's thumbnail
+      if (photos.length === 0 && plant) {
+        await plantRepository.update({
+          id: plant.id,
+          thumbnailUrl: photo.localUri,
+        });
+      }
+
       setShowPhotoCapture(false);
       await loadPlantData();
     } catch (error) {
       console.error('Failed to save photo:', error);
       alert('Failed to save photo');
+    }
+  };
+
+  const handleSetThumbnail = async (photoUri: string) => {
+    if (!plant) return;
+
+    try {
+      await plantRepository.update({
+        id: plant.id,
+        thumbnailUrl: photoUri,
+      });
+      await loadPlantData();
+      setIsEditMode(false);
+    } catch (error) {
+      console.error('Failed to update thumbnail:', error);
+      alert('Failed to update plant image');
     }
   };
 
@@ -92,6 +136,38 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
     } catch (error) {
       console.error('Failed to delete photo:', error);
       alert('Failed to delete photo');
+    }
+  };
+
+  const handleSaveDetails = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!plant || !editFormData.name.trim()) return;
+
+    try {
+      await plantRepository.update({
+        id: plant.id,
+        name: editFormData.name,
+        species: editFormData.species || undefined,
+        location: editFormData.location || undefined,
+        notes: editFormData.notes || undefined,
+      });
+      await loadPlantData();
+      setIsEditingDetails(false);
+    } catch (error) {
+      console.error('Failed to update plant:', error);
+      alert('Failed to update plant details');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingDetails(false);
+    if (plant) {
+      setEditFormData({
+        name: plant.name,
+        species: plant.species || '',
+        location: plant.location || '',
+        notes: plant.notes || '',
+      });
     }
   };
 
@@ -117,27 +193,146 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
 
       <Card className="p-6 mb-8">
         <div className="flex items-start justify-between mb-4">
-          <div className="flex items-start gap-4">
-            <div className="w-20 h-20 bg-green-100 rounded-lg flex items-center justify-center">
-              <span className="text-4xl">🌱</span>
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold">{plant.name}</h1>
-              {plant.species && <p className="text-muted-foreground">{plant.species}</p>}
-              {plant.location && (
-                <p className="text-sm text-muted-foreground mt-1">📍 {plant.location}</p>
+          <div className="flex items-start gap-4 flex-1">
+            <div
+              className={`w-20 h-20 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 ${
+                plant.thumbnailUrl && photos.length > 0
+                  ? 'cursor-pointer hover:opacity-80 transition-opacity'
+                  : 'bg-green-100'
+              }`}
+              onClick={() => {
+                if (plant.thumbnailUrl && photos.length > 0) {
+                  setIsEditMode(!isEditMode);
+                }
+              }}
+              title={plant.thumbnailUrl && photos.length > 0 ? 'Click to change image' : undefined}
+            >
+              {plant.thumbnailUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={plant.thumbnailUrl}
+                  alt={plant.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-4xl">🌱</span>
               )}
             </div>
+
+            {isEditingDetails ? (
+              <form onSubmit={handleSaveDetails} className="flex-1 space-y-3">
+                <div>
+                  <input
+                    type="text"
+                    required
+                    value={editFormData.name}
+                    onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                    className="w-full text-3xl font-bold px-3 py-1 neu-pressed rounded-lg bg-background focus:neu-flat transition-all outline-none focus:ring-2 focus:ring-primary/50"
+                    placeholder="Plant name"
+                  />
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    value={editFormData.species}
+                    onChange={(e) => setEditFormData({ ...editFormData, species: e.target.value })}
+                    className="w-full px-3 py-1 neu-pressed rounded-lg bg-background focus:neu-flat transition-all outline-none focus:ring-2 focus:ring-primary/50 text-muted-foreground"
+                    placeholder="Species (optional)"
+                  />
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    value={editFormData.location}
+                    onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
+                    className="w-full text-sm px-3 py-1 neu-pressed rounded-lg bg-background focus:neu-flat transition-all outline-none focus:ring-2 focus:ring-primary/50 text-muted-foreground"
+                    placeholder="📍 Location (optional)"
+                  />
+                </div>
+              </form>
+            ) : (
+              <div className="flex-1 min-w-0">
+                <h1 className="text-3xl font-bold break-words" style={{ overflowWrap: 'anywhere' }}>
+                  {plant.name}
+                </h1>
+                {plant.species && (
+                  <p
+                    className="text-muted-foreground break-words"
+                    style={{ overflowWrap: 'anywhere' }}
+                  >
+                    {plant.species}
+                  </p>
+                )}
+                {plant.location && (
+                  <p
+                    className="text-sm text-muted-foreground mt-1 break-words"
+                    style={{ overflowWrap: 'anywhere' }}
+                  >
+                    📍 {plant.location}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
-          <Button variant="destructive" size="sm" onClick={handleDelete}>
-            Delete
-          </Button>
+
+          <div className="flex gap-2 flex-shrink-0">
+            {isEditingDetails ? (
+              <>
+                <Button type="submit" size="sm" onClick={handleSaveDetails}>
+                  Save
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleCancelEdit}>
+                  Cancel
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditingDetails(true)}
+                  title="Edit plant details"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                    <path d="m15 5 4 4" />
+                  </svg>
+                </Button>
+                <Button variant="destructive" size="sm" onClick={handleDelete}>
+                  Delete
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
-        {plant.notes && (
-          <div className="mt-4 p-4 bg-muted rounded-lg">
-            <p className="text-sm whitespace-pre-wrap">{plant.notes}</p>
+        {isEditingDetails ? (
+          <div className="mt-4">
+            <label className="block text-sm font-semibold mb-2">Notes</label>
+            <textarea
+              value={editFormData.notes}
+              onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })}
+              className="w-full px-4 py-3 neu-pressed rounded-xl bg-background focus:neu-flat transition-all outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+              rows={4}
+              placeholder="Care instructions, observations, etc."
+            />
           </div>
+        ) : (
+          plant.notes && (
+            <div className="mt-4 p-4 bg-muted rounded-lg">
+              <p className="text-sm whitespace-pre-wrap">{plant.notes}</p>
+            </div>
+          )
         )}
       </Card>
 
@@ -164,29 +359,41 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
 
             return (
               <Card key={task.id} className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold">{task.title}</h3>
-                      <span className="text-xs px-2 py-1 bg-muted rounded">{task.taskType}</span>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <h3
+                        className="font-semibold break-words"
+                        style={{ overflowWrap: 'anywhere' }}
+                      >
+                        {task.title}
+                      </h3>
+                      <span className="text-xs px-2 py-1 bg-muted rounded flex-shrink-0">
+                        {task.taskType}
+                      </span>
                       {isOverdue && (
-                        <span className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded">
+                        <span className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded flex-shrink-0">
                           Overdue
                         </span>
                       )}
                       {isDue && !isOverdue && (
-                        <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded">
+                        <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded flex-shrink-0">
                           Due Soon
                         </span>
                       )}
                       {task.completedAt && (
-                        <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded">
+                        <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded flex-shrink-0">
                           ✓ Done
                         </span>
                       )}
                     </div>
                     {task.description && (
-                      <p className="text-sm text-muted-foreground">{task.description}</p>
+                      <p
+                        className="text-sm text-muted-foreground break-words"
+                        style={{ overflowWrap: 'anywhere' }}
+                      >
+                        {task.description}
+                      </p>
                     )}
                     {task.dueAt && (
                       <p className="text-xs text-muted-foreground mt-2">
@@ -200,7 +407,11 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
                     )}
                   </div>
                   {!task.completedAt && (
-                    <Button size="sm" onClick={() => handleCompleteTask(task.id)}>
+                    <Button
+                      size="sm"
+                      onClick={() => handleCompleteTask(task.id)}
+                      className="flex-shrink-0"
+                    >
                       Complete
                     </Button>
                   )}
@@ -213,10 +424,26 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
 
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-2xl font-bold">Photos</h2>
-        <Button onClick={() => setShowPhotoCapture(!showPhotoCapture)}>
-          {showPhotoCapture ? 'Cancel' : '+ Add Photo'}
-        </Button>
+        <div className="flex gap-2">
+          {photos.length > 0 && (
+            <Button
+              variant={isEditMode ? 'default' : 'outline'}
+              onClick={() => setIsEditMode(!isEditMode)}
+            >
+              {isEditMode ? 'Done' : 'Edit'}
+            </Button>
+          )}
+          <Button onClick={() => setShowPhotoCapture(!showPhotoCapture)}>
+            {showPhotoCapture ? 'Cancel' : '+ Add Photo'}
+          </Button>
+        </div>
       </div>
+
+      {isEditMode && photos.length > 0 && (
+        <Card className="p-4 mb-4 bg-blue-50 dark:bg-blue-950">
+          <p className="text-sm font-medium mb-2">Select a photo to set as plant image:</p>
+        </Card>
+      )}
 
       {showPhotoCapture && (
         <Card className="p-4 mb-4">
@@ -231,24 +458,46 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
         </Card>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {photos.map((photo) => (
-            <Card key={photo.id} className="overflow-hidden group relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={photo.localUri || photo.remoteUrl || ''}
-                alt="Plant photo"
-                className="w-full h-48 object-cover"
-              />
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button size="sm" variant="destructive" onClick={() => handleDeletePhoto(photo.id)}>
-                  Delete
-                </Button>
-              </div>
-              <div className="p-2 text-xs text-muted-foreground">
-                {new Date(photo.takenAt).toLocaleDateString()}
-              </div>
-            </Card>
-          ))}
+          {photos.map((photo) => {
+            const photoUri = photo.localUri || photo.remoteUrl || '';
+            const isCurrentThumbnail = plant?.thumbnailUrl === photoUri;
+
+            return (
+              <Card
+                key={photo.id}
+                className={`overflow-hidden group relative ${
+                  isEditMode ? 'cursor-pointer hover:ring-2 hover:ring-primary' : ''
+                } ${isCurrentThumbnail && isEditMode ? 'ring-2 ring-primary' : ''}`}
+                onClick={() => {
+                  if (isEditMode) {
+                    handleSetThumbnail(photoUri);
+                  }
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={photoUri} alt="Plant photo" className="w-full h-48 object-cover" />
+                {isCurrentThumbnail && (
+                  <div className="absolute top-2 left-2 bg-primary text-primary-foreground px-2 py-1 rounded text-xs font-semibold">
+                    Plant Image
+                  </div>
+                )}
+                {!isEditMode && (
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDeletePhoto(photo.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                )}
+                <div className="p-2 text-xs text-muted-foreground">
+                  {new Date(photo.takenAt).toLocaleDateString()}
+                </div>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>
