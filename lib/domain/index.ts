@@ -12,6 +12,8 @@ export { getDatabase, initDatabase, clearDatabase, getDb } from './database';
 // Repositories
 export { plantRepository, PlantRepository } from './repositories/PlantRepository';
 export { careTaskRepository, CareTaskRepository } from './repositories/CareTaskRepository';
+export { photoRepository, PhotoRepository } from './repositories/PhotoRepository';
 
 // Services
 export { mutationQueueService, MutationQueueService } from './services/MutationQueueService';
+export { notificationScheduler, NotificationScheduler } from './services/NotificationScheduler';

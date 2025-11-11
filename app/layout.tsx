@@ -13,6 +13,13 @@ const DatabaseInitializer = dynamic(() => import('@/components/DatabaseInitializ
   ssr: false,
 });
 
+const ThemeToggle = dynamic(
+  () => import('@/components/ThemeToggle').then((mod) => ({ default: mod.ThemeToggle })),
+  {
+    ssr: false,
+  }
+);
+
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
@@ -23,13 +30,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Plant Tracker - Care for Your Plants',
+  title: 'Fueille - Care for Your Plants',
   description: 'Track your plants and care tasks with offline-first app',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Plant Tracker',
+    title: 'Fueille',
   },
 };
 
@@ -47,6 +54,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="h-full">
       <body className={`${inter.className} flex min-h-screen flex-col`}>
+        <header className="neu-flat border-b border-border/30">
+          <div className="container mx-auto px-6 py-6 flex items-center justify-between max-w-7xl">
+            <div className="flex items-center gap-5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.svg" alt="Fueille Logo" className="h-24 w-24" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/title.svg" alt="Fueille" className="h-18" />
+            </div>
+            <ThemeToggle />
+          </div>
+        </header>
         <div className="flex-1">{children}</div>
         <Footer />
         {showInlineAI && <AiInlineRequest />}

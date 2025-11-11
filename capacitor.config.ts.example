@@ -1,0 +1,31 @@
+import type { CapacitorConfig } from '@capacitor/cli';
+
+const config: CapacitorConfig = {
+  appId: 'com.fueille.app',
+  appName: 'Fueille',
+  webDir: 'out', // Next.js static export output directory
+  server: {
+    androidScheme: 'https',
+    // For development with hot reload, uncomment and update IP:
+    // url: 'http://10.0.2.2:3002', // Android emulator host
+    // cleartext: true,
+  },
+  plugins: {
+    Camera: {
+      // Capacitor Camera plugin configuration
+      android: {
+        allowEditing: false,
+      },
+      ios: {
+        allowEditing: false,
+      },
+    },
+    LocalNotifications: {
+      // Capacitor Local Notifications plugin configuration
+      smallIcon: 'ic_stat_icon_config_sample',
+      iconColor: '#488AFF',
+    },
+  },
+};
+
+export default config;

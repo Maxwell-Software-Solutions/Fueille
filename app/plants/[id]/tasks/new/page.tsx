@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { careTaskRepository } from '@/lib/domain';
+import { careTaskRepository, notificationScheduler } from '@/lib/domain';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
@@ -23,7 +23,7 @@ export default function NewTaskPage({ params }: { params: { id: string } }) {
 
     setSaving(true);
     try {
-      await careTaskRepository.create({
+      const task = await careTaskRepository.create({
         plantId: params.id,
         title: formData.title,
         description: formData.description || undefined,
@@ -31,6 +31,12 @@ export default function NewTaskPage({ params }: { params: { id: string } }) {
         dueAt: formData.dueDate ? new Date(formData.dueDate) : undefined,
         repeatInterval: formData.repeatInterval || null,
       });
+
+      // Schedule notification if due date set and permission granted
+      if (task.dueAt) {
+        await notificationScheduler.scheduleForTask(task);
+      }
+
       router.back();
     } catch (error) {
       console.error('Failed to create task:', error);
@@ -41,13 +47,13 @@ export default function NewTaskPage({ params }: { params: { id: string } }) {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-2xl">
-      <h1 className="text-3xl font-bold mb-6">Add Care Task</h1>
+    <div className="container mx-auto px-6 py-8 max-w-3xl">
+      <h1 className="text-3xl font-bold mb-8">Add Care Task</h1>
 
-      <Card className="p-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <Card className="p-8">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="title" className="block text-sm font-medium mb-2">
+            <label htmlFor="title" className="block text-sm font-semibold mb-3">
               Task Name *
             </label>
             <input
@@ -56,13 +62,13 @@ export default function NewTaskPage({ params }: { params: { id: string } }) {
               required
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full px-4 py-3 neu-pressed rounded-xl bg-background focus:neu-flat transition-all outline-none focus:ring-2 focus:ring-primary/50"
               placeholder="e.g., Water plant"
             />
           </div>
 
           <div>
-            <label htmlFor="taskType" className="block text-sm font-medium mb-2">
+            <label htmlFor="taskType" className="block text-sm font-semibold mb-3">
               Task Type
             </label>
             <select
@@ -74,7 +80,7 @@ export default function NewTaskPage({ params }: { params: { id: string } }) {
                   taskType: e.target.value as typeof formData.taskType,
                 })
               }
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full px-4 py-3 neu-pressed rounded-xl bg-background focus:neu-flat transition-all outline-none focus:ring-2 focus:ring-primary/50"
             >
               <option value="water">💧 Water</option>
               <option value="fertilize">🌿 Fertilize</option>
@@ -85,7 +91,7 @@ export default function NewTaskPage({ params }: { params: { id: string } }) {
           </div>
 
           <div>
-            <label htmlFor="dueDate" className="block text-sm font-medium mb-2">
+            <label htmlFor="dueDate" className="block text-sm font-semibold mb-3">
               Due Date
             </label>
             <input
@@ -93,12 +99,12 @@ export default function NewTaskPage({ params }: { params: { id: string } }) {
               type="date"
               value={formData.dueDate}
               onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full px-4 py-3 neu-pressed rounded-xl bg-background focus:neu-flat transition-all outline-none focus:ring-2 focus:ring-primary/50"
             />
           </div>
 
           <div>
-            <label htmlFor="repeatInterval" className="block text-sm font-medium mb-2">
+            <label htmlFor="repeatInterval" className="block text-sm font-semibold mb-3">
               Repeat
             </label>
             <select
@@ -110,7 +116,7 @@ export default function NewTaskPage({ params }: { params: { id: string } }) {
                   repeatInterval: e.target.value as typeof formData.repeatInterval,
                 })
               }
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full px-4 py-3 neu-pressed rounded-xl bg-background focus:neu-flat transition-all outline-none focus:ring-2 focus:ring-primary/50"
             >
               <option value="">No repeat</option>
               <option value="daily">Daily</option>
@@ -121,24 +127,30 @@ export default function NewTaskPage({ params }: { params: { id: string } }) {
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-sm font-medium mb-2">
+            <label htmlFor="description" className="block text-sm font-semibold mb-3">
               Notes
             </label>
             <textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-3 py-2 border rounded-md"
-              rows={3}
+              className="w-full px-4 py-3 neu-pressed rounded-xl bg-background focus:neu-flat transition-all outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+              rows={4}
               placeholder="Additional details..."
             />
           </div>
 
-          <div className="flex gap-3 pt-4">
-            <Button type="submit" disabled={saving || !formData.title.trim()}>
+          <div className="flex gap-4 pt-6">
+            <Button type="submit" disabled={saving || !formData.title.trim()} size="lg">
               {saving ? 'Saving...' : 'Save Task'}
             </Button>
-            <Button type="button" variant="outline" onClick={() => router.back()} disabled={saving}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.back()}
+              disabled={saving}
+              size="lg"
+            >
               Cancel
             </Button>
           </div>

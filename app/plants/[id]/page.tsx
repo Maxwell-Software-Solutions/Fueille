@@ -2,15 +2,25 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { plantRepository, careTaskRepository, type Plant, type CareTask } from '@/lib/domain';
+import {
+  plantRepository,
+  careTaskRepository,
+  photoRepository,
+  type Plant,
+  type CareTask,
+  type Photo,
+} from '@/lib/domain';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { PhotoCapture } from '@/components/PhotoCapture';
 
 export default function PlantDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [plant, setPlant] = useState<Plant | null>(null);
   const [tasks, setTasks] = useState<CareTask[]>([]);
+  const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showPhotoCapture, setShowPhotoCapture] = useState(false);
 
   const loadPlantData = useCallback(async () => {
     try {
@@ -23,6 +33,9 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
 
       const plantTasks = await careTaskRepository.list({ plantId: params.id });
       setTasks(plantTasks);
+
+      const plantPhotos = await photoRepository.list({ plantId: params.id });
+      setPhotos(plantPhotos);
     } catch (error) {
       console.error('Failed to load plant:', error);
     } finally {
@@ -52,6 +65,33 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
       await loadPlantData();
     } catch (error) {
       console.error('Failed to complete task:', error);
+    }
+  };
+
+  const handlePhotoCapture = async (dataUrl: string) => {
+    try {
+      await photoRepository.create({
+        plantId: params.id,
+        localUri: dataUrl,
+        takenAt: new Date(),
+      });
+      setShowPhotoCapture(false);
+      await loadPlantData();
+    } catch (error) {
+      console.error('Failed to save photo:', error);
+      alert('Failed to save photo');
+    }
+  };
+
+  const handleDeletePhoto = async (photoId: string) => {
+    if (!confirm('Delete this photo?')) return;
+
+    try {
+      await photoRepository.delete(photoId);
+      await loadPlantData();
+    } catch (error) {
+      console.error('Failed to delete photo:', error);
+      alert('Failed to delete photo');
     }
   };
 
@@ -168,6 +208,47 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
               </Card>
             );
           })}
+        </div>
+      )}
+
+      <div className="mt-8 mb-4 flex items-center justify-between">
+        <h2 className="text-2xl font-bold">Photos</h2>
+        <Button onClick={() => setShowPhotoCapture(!showPhotoCapture)}>
+          {showPhotoCapture ? 'Cancel' : '+ Add Photo'}
+        </Button>
+      </div>
+
+      {showPhotoCapture && (
+        <Card className="p-4 mb-4">
+          <PhotoCapture onPhotoCapture={handlePhotoCapture} />
+        </Card>
+      )}
+
+      {photos.length === 0 ? (
+        <Card className="p-8 text-center">
+          <p className="text-muted-foreground mb-4">No photos yet</p>
+          <Button onClick={() => setShowPhotoCapture(true)}>Add First Photo</Button>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {photos.map((photo) => (
+            <Card key={photo.id} className="overflow-hidden group relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={photo.localUri || photo.remoteUrl || ''}
+                alt="Plant photo"
+                className="w-full h-48 object-cover"
+              />
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button size="sm" variant="destructive" onClick={() => handleDeletePhoto(photo.id)}>
+                  Delete
+                </Button>
+              </div>
+              <div className="p-2 text-xs text-muted-foreground">
+                {new Date(photo.takenAt).toLocaleDateString()}
+              </div>
+            </Card>
+          ))}
         </div>
       )}
     </div>

@@ -38,13 +38,13 @@ export default function NewPlantPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-2xl">
-      <h1 className="text-3xl font-bold mb-6">Add New Plant</h1>
+    <div className="container mx-auto px-6 py-8 max-w-3xl">
+      <h1 className="text-3xl font-bold mb-8">Add New Plant</h1>
 
-      <Card className="p-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <Card className="p-8">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium mb-2">
+            <label htmlFor="name" className="block text-sm font-semibold mb-3">
               Plant Name *
             </label>
             <input
@@ -53,13 +53,13 @@ export default function NewPlantPage() {
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full px-4 py-3 neu-pressed rounded-xl bg-background focus:neu-flat transition-all outline-none focus:ring-2 focus:ring-primary/50"
               placeholder="e.g., Snake Plant"
             />
           </div>
 
           <div>
-            <label htmlFor="species" className="block text-sm font-medium mb-2">
+            <label htmlFor="species" className="block text-sm font-semibold mb-3">
               Species
             </label>
             <input
@@ -67,13 +67,13 @@ export default function NewPlantPage() {
               type="text"
               value={formData.species}
               onChange={(e) => setFormData({ ...formData, species: e.target.value })}
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full px-4 py-3 neu-pressed rounded-xl bg-background focus:neu-flat transition-all outline-none focus:ring-2 focus:ring-primary/50"
               placeholder="e.g., Sansevieria trifasciata"
             />
           </div>
 
           <div>
-            <label htmlFor="location" className="block text-sm font-medium mb-2">
+            <label htmlFor="location" className="block text-sm font-semibold mb-3">
               Location
             </label>
             <input
@@ -81,30 +81,36 @@ export default function NewPlantPage() {
               type="text"
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full px-4 py-3 neu-pressed rounded-xl bg-background focus:neu-flat transition-all outline-none focus:ring-2 focus:ring-primary/50"
               placeholder="e.g., Living Room"
             />
           </div>
 
           <div>
-            <label htmlFor="notes" className="block text-sm font-medium mb-2">
+            <label htmlFor="notes" className="block text-sm font-semibold mb-3">
               Notes
             </label>
             <textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="w-full px-3 py-2 border rounded-md"
-              rows={4}
+              className="w-full px-4 py-3 neu-pressed rounded-xl bg-background focus:neu-flat transition-all outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+              rows={5}
               placeholder="Care instructions, observations, etc."
             />
           </div>
 
-          <div className="flex gap-3 pt-4">
-            <Button type="submit" disabled={saving || !formData.name.trim()}>
+          <div className="flex gap-4 pt-6">
+            <Button type="submit" disabled={saving || !formData.name.trim()} size="lg">
               {saving ? 'Saving...' : 'Save Plant'}
             </Button>
-            <Button type="button" variant="outline" onClick={() => router.back()} disabled={saving}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.back()}
+              disabled={saving}
+              size="lg"
+            >
               Cancel
             </Button>
           </div>

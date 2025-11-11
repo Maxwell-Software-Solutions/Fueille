@@ -1,6 +1,6 @@
 {
-  "name": "Plant Tracker - Care for Your Plants",
-  "short_name": "Plant Tracker",
+  "name": "Fueille - Care for Your Plants",
+  "short_name": "Fueille",
   "description": "Track your plants and care tasks offline-first",
   "start_url": "/",
   "display": "standalone",
