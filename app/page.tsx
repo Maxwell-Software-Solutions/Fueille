@@ -16,6 +16,24 @@ import { NotificationSetup } from '@/components/NotificationSetup';
 export default function Home() {
   const [dueTasks, setDueTasks] = useState<Array<CareTask & { plant?: Plant }>>([]);
   const [loading, setLoading] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(false);
+
+  useEffect(() => {
+    // Check if user has seen the welcome message before
+    const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
+
+    if (!hasSeenWelcome) {
+      setShowWelcome(true);
+
+      // Hide after 6 seconds and mark as seen
+      const timer = setTimeout(() => {
+        setShowWelcome(false);
+        localStorage.setItem('hasSeenWelcome', 'true');
+      }, 6000);
+
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   useEffect(() => {
     loadTasks();
@@ -72,10 +90,12 @@ export default function Home() {
 
   return (
     <main className="container mx-auto px-6 py-8 max-w-7xl" suppressHydrationWarning>
-      <div className="mb-10">
-        <h1 className="text-3xl font-bold mb-3">Welcome to Fueille</h1>
-        <p className="text-base text-muted-foreground">Keep your plants healthy and thriving</p>
-      </div>
+      {showWelcome && (
+        <div className="mb-10 transition-opacity duration-500">
+          <h1 className="text-3xl font-bold mb-3">Welcome to Fueille</h1>
+          <p className="text-base text-muted-foreground">Keep your plants healthy and thriving</p>
+        </div>
+      )}
 
       <NotificationSetup />
 
