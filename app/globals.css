@@ -8,14 +8,14 @@ html {
 
 body {
   color: #000;
-  background: #e0e5ec;
+  background: var(--neu-bg-light);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Dark mode overrides */
 .dark body {
   color: #fff;
-  background: #2c3e50;
+  background: var(--neu-bg-dark);
 }
 
 /* Neumorphic Design System */
@@ -24,48 +24,58 @@ body {
   --neu-blur: 16px;
   --neu-size: 280px;
   --gradient-colors: linear-gradient(to right, #4B0082, #FFA500);
+  
+  /* Light mode neumorphic colors */
+  --neu-bg-light: hsl(220, 100%, 98%);
+  --neu-shadow-dark-light: #b8bcc4;
+  --neu-shadow-light-light: #ffffff;
+  
+  /* Dark mode neumorphic colors */
+  --neu-bg-dark: #2c3e50;
+  --neu-shadow-dark-dark: #1a252f;
+  --neu-shadow-light-dark: #3e5771;
 }
 
 /* Neumorphic elevation classes */
 .neu-flat {
-  background: #e0e5ec;
+  background: var(--neu-bg-light);
   box-shadow: none;
 }
 
 .neu-pressed {
-  background: #e0e5ec;
-  box-shadow: inset 5px 5px 10px #b8bcc4, inset -5px -5px 10px #ffffff;
+  background: var(--neu-bg-light);
+  box-shadow: inset 5px 5px 10px var(--neu-shadow-dark-light), inset -5px -5px 10px var(--neu-shadow-light-light);
 }
 
 .neu-raised {
-  background: #e0e5ec;
-  box-shadow: 8px 8px 16px #b8bcc4, -8px -8px 16px #ffffff;
+  background: var(--neu-bg-light);
+  box-shadow: 8px 8px 16px var(--neu-shadow-dark-light), -8px -8px 16px var(--neu-shadow-light-light);
 }
 
 .neu-floating {
-  background: #e0e5ec;
-  box-shadow: 12px 12px 24px #b8bcc4, -12px -12px 24px #ffffff;
+  background: var(--neu-bg-light);
+  box-shadow: 12px 12px 24px var(--neu-shadow-dark-light), -12px -12px 24px var(--neu-shadow-light-light);
 }
 
 /* Dark mode neumorphic */
 .dark .neu-flat {
-  background: #2c3e50;
+  background: var(--neu-bg-dark);
   box-shadow: none;
 }
 
 .dark .neu-pressed {
-  background: #2c3e50;
-  box-shadow: inset 5px 5px 10px #1a252f, inset -5px -5px 10px #3e5771;
+  background: var(--neu-bg-dark);
+  box-shadow: inset 5px 5px 10px var(--neu-shadow-dark-dark), inset -5px -5px 10px var(--neu-shadow-light-dark);
 }
 
 .dark .neu-raised {
-  background: #2c3e50;
-  box-shadow: 8px 8px 16px #1a252f, -8px -8px 16px #3e5771;
+  background: var(--neu-bg-dark);
+  box-shadow: 8px 8px 16px var(--neu-shadow-dark-dark), -8px -8px 16px var(--neu-shadow-light-dark);
 }
 
 .dark .neu-floating {
-  background: #2c3e50;
-  box-shadow: 12px 12px 24px #1a252f, -12px -12px 24px #3e5771;
+  background: var(--neu-bg-dark);
+  box-shadow: 12px 12px 24px var(--neu-shadow-dark-dark), -12px -12px 24px var(--neu-shadow-light-dark);
 }
 
 /* Interactive states */
@@ -74,19 +84,19 @@ body {
 }
 
 .neu-interactive:hover {
-  box-shadow: 10px 10px 20px #b8bcc4, -10px -10px 20px #ffffff;
+  box-shadow: 10px 10px 20px var(--neu-shadow-dark-light), -10px -10px 20px var(--neu-shadow-light-light);
 }
 
 .neu-interactive:active {
-  box-shadow: inset 5px 5px 10px #b8bcc4, inset -5px -5px 10px #ffffff;
+  box-shadow: inset 5px 5px 10px var(--neu-shadow-dark-light), inset -5px -5px 10px var(--neu-shadow-light-light);
 }
 
 .dark .neu-interactive:hover {
-  box-shadow: 10px 10px 20px #1a252f, -10px -10px 20px #3e5771;
+  box-shadow: 10px 10px 20px var(--neu-shadow-dark-dark), -10px -10px 20px var(--neu-shadow-light-dark);
 }
 
 .dark .neu-interactive:active {
-  box-shadow: inset 5px 5px 10px #1a252f, inset -5px -5px 10px #3e5771;
+  box-shadow: inset 5px 5px 10px var(--neu-shadow-dark-dark), inset -5px -5px 10px var(--neu-shadow-light-dark);
 }
 
 .gradient-text {
