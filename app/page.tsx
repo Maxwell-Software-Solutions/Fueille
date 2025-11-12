@@ -5,9 +5,11 @@ import Link from 'next/link';
 import {
   careTaskRepository,
   plantRepository,
+  layoutRepository,
   notificationScheduler,
   type CareTask,
   type Plant,
+  type Layout,
 } from '@/lib/domain';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -16,6 +18,7 @@ import { PremiumSection } from '@/components/PremiumSection';
 
 export default function Home() {
   const [dueTasks, setDueTasks] = useState<Array<CareTask & { plant?: Plant }>>([]);
+  const [layouts, setLayouts] = useState<Layout[]>([]);
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
 
@@ -38,6 +41,7 @@ export default function Home() {
 
   useEffect(() => {
     loadTasks();
+    loadLayouts();
 
     // Schedule notifications for upcoming tasks on mount
     const initNotifications = async () => {
@@ -65,6 +69,15 @@ export default function Home() {
       console.error('Failed to load tasks:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadLayouts = async () => {
+    try {
+      const allLayouts = await layoutRepository.list();
+      setLayouts(allLayouts.slice(0, 4)); // Show only first 4 layouts
+    } catch (error) {
+      console.error('Failed to load layouts:', error);
     }
   };
 
@@ -185,6 +198,51 @@ export default function Home() {
               </Card>
             );
           })}
+        </div>
+      )}
+
+      <div className="mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold mb-2">My Layouts</h2>
+            <p className="text-base text-muted-foreground">Visual maps of your plant locations</p>
+          </div>
+          <Link href="/layouts">
+            <Button variant="outline">View All</Button>
+          </Link>
+        </div>
+      </div>
+
+      {layouts.length === 0 ? (
+        <Card className="p-10 text-center mb-8">
+          <p className="text-xl font-semibold mb-2">📍 No layouts yet</p>
+          <p className="text-base text-muted-foreground mb-4">
+            Create a layout to visually map where your plants are located
+          </p>
+          <Link href="/layouts/new">
+            <Button>Create First Layout</Button>
+          </Link>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          {layouts.map((layout) => (
+            <Link key={layout.id} href={`/layouts/${layout.id}`}>
+              <Card className="neu-interactive cursor-pointer hover:neu-floating overflow-hidden">
+                <div className="aspect-square relative bg-muted">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={layout.imageUri}
+                    alt={layout.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-3">
+                  <h3 className="font-semibold text-sm truncate">{layout.name}</h3>
+                  <p className="text-xs text-muted-foreground capitalize">{layout.type}</p>
+                </div>
+              </Card>
+            </Link>
+          ))}
         </div>
       )}
 

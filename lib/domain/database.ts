@@ -1,5 +1,15 @@
 import Dexie, { type EntityTable } from 'dexie';
-import type { Plant, CareTask, Photo, Tag, PlantTag, DeviceSync, SyncCursor } from './entities';
+import type {
+  Plant,
+  CareTask,
+  Photo,
+  Tag,
+  PlantTag,
+  DeviceSync,
+  SyncCursor,
+  Layout,
+  PlantMarker,
+} from './entities';
 
 /**
  * IndexedDB database for offline-first plant tracking
@@ -14,6 +24,8 @@ export class PlantDatabase extends Dexie {
   plantTags!: EntityTable<PlantTag, 'id'>;
   deviceSync!: EntityTable<DeviceSync, 'id'>;
   syncCursor!: EntityTable<SyncCursor, 'id'>;
+  layouts!: EntityTable<Layout, 'id'>;
+  plantMarkers!: EntityTable<PlantMarker, 'id'>;
 
   constructor() {
     super('PlantTrackerDB');
@@ -28,6 +40,12 @@ export class PlantDatabase extends Dexie {
       plantTags: 'id, plantId, tagId, createdAt, updatedAt, deletedAt',
       deviceSync: 'id, entityType, entityId, operation, syncedAt, createdAt',
       syncCursor: 'id, lastSyncAt',
+    });
+
+    // Schema version 2 - Add layout tables
+    this.version(2).stores({
+      layouts: 'id, name, type, createdAt, updatedAt, deletedAt',
+      plantMarkers: 'id, layoutId, plantId, createdAt, updatedAt, deletedAt',
     });
   }
 }
