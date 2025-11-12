@@ -27,3 +27,16 @@ export type {
   TelemetryProvider,
   TelemetryProperties,
 } from './services/TelemetryService';
+export {
+  identifyPlantsFromLayout,
+  isPlantIdentificationAvailable,
+} from './services/plantIdentificationService';
+
+// Types
+export type {
+  IdentifiedPlant,
+  PlantIdentificationRequest,
+  PlantIdentificationResponse,
+  PlantIdentificationConfig,
+} from './types/plantIdentification';
+export { DEFAULT_IDENTIFICATION_CONFIG } from './types/plantIdentification';
