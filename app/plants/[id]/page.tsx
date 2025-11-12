@@ -185,10 +185,63 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">
-      <div className="mb-6">
-        <Button variant="outline" onClick={() => router.back()}>
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <Button variant="secondary" onClick={() => router.back()}>
           ← Back
         </Button>
+        <div className="flex items-center gap-3">
+          {isEditingDetails ? (
+            <>
+              <Button onClick={handleSaveDetails}>Save</Button>
+              <Button variant="secondary" onClick={handleCancelEdit}>
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="secondary"
+                size="icon"
+                onClick={() => setIsEditingDetails(true)}
+                title="Edit plant details"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                  <path d="m15 5 4 4" />
+                </svg>
+              </Button>
+              <Button variant="secondary" size="icon" onClick={handleDelete} title="Delete plant">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M3 6h18" />
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                  <line x1="10" x2="10" y1="11" y2="17" />
+                  <line x1="14" x2="14" y1="11" y2="17" />
+                </svg>
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       <Card className="p-6 mb-8">
@@ -227,7 +280,7 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
                     required
                     value={editFormData.name}
                     onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                    className="w-full text-3xl font-bold px-3 py-1 neu-pressed rounded-lg bg-background focus:neu-flat transition-all outline-none focus:ring-2 focus:ring-primary/50"
+                    className="w-full text-xl font-bold px-3 py-1 neu-pressed rounded-lg bg-background focus:neu-flat transition-all outline-none focus:ring-2 focus:ring-primary/50"
                     placeholder="Plant name"
                   />
                 </div>
@@ -252,7 +305,7 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
               </form>
             ) : (
               <div className="flex-1 min-w-0">
-                <h1 className="text-3xl font-bold break-words" style={{ overflowWrap: 'anywhere' }}>
+                <h1 className="text-xl font-bold break-words" style={{ overflowWrap: 'anywhere' }}>
                   {plant.name}
                 </h1>
                 {plant.species && (
@@ -272,46 +325,6 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
                   </p>
                 )}
               </div>
-            )}
-          </div>
-
-          <div className="flex gap-2 flex-shrink-0">
-            {isEditingDetails ? (
-              <>
-                <Button type="submit" size="sm" onClick={handleSaveDetails}>
-                  Save
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleCancelEdit}>
-                  Cancel
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsEditingDetails(true)}
-                  title="Edit plant details"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                    <path d="m15 5 4 4" />
-                  </svg>
-                </Button>
-                <Button variant="destructive" size="sm" onClick={handleDelete}>
-                  Delete
-                </Button>
-              </>
             )}
           </div>
         </div>
