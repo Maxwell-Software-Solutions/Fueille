@@ -20,7 +20,32 @@ export class NotificationScheduler {
    * Request notification permission from user
    */
   async requestPermission(): Promise<boolean> {
-    if (typeof window === 'undefined' || !('Notification' in window)) {
+    if (typeof window === 'undefined') {
+      console.warn('Notifications not supported in SSR context');
+      return false;
+    }
+
+    // Check if running in Capacitor (mobile)
+    if (window.NativePlantBridge && window.Capacitor) {
+      try {
+        // For Capacitor, permission is requested when scheduling
+        // We'll do a test schedule to check permission
+        const testResult = await window.NativePlantBridge.scheduleNotification({
+          id: 'permission-test',
+          title: 'Notifications Enabled',
+          body: 'You will now receive plant care reminders',
+        });
+        this.permission = testResult.scheduled ? 'granted' : 'denied';
+        return testResult.scheduled;
+      } catch (error) {
+        console.error('Failed to request mobile notification permission:', error);
+        this.permission = 'denied';
+        return false;
+      }
+    }
+
+    // Web Notifications API fallback
+    if (!('Notification' in window)) {
       console.warn('Notifications not supported in this browser');
       return false;
     }
@@ -62,7 +87,29 @@ export class NotificationScheduler {
       return false;
     }
 
-    // Schedule notification
+    // Check if running in Capacitor (mobile) - use native notifications
+    if (window.NativePlantBridge && window.Capacitor) {
+      try {
+        const deepLink = deepLinkService.createDeepLink('plant', task.plantId);
+        const result = await window.NativePlantBridge.scheduleNotification({
+          id: task.id,
+          title: '🌱 Plant Care Reminder',
+          body: `Time to ${task.taskType}: ${task.title}`,
+          at: new Date(task.dueAt).toISOString(),
+          data: {
+            taskId: task.id,
+            plantId: task.plantId,
+            deepLink,
+          },
+        });
+        return result.scheduled;
+      } catch (error) {
+        console.error('Failed to schedule mobile notification:', error);
+        return false;
+      }
+    }
+
+    // Web Notifications API fallback - use setTimeout
     const timeoutId = window.setTimeout(() => {
       this.showNotification(task);
       this.scheduledNotifications.delete(task.id);

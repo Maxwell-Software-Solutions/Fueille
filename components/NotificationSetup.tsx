@@ -12,20 +12,42 @@ import { Card } from '@/components/ui/card';
 export function NotificationSetup() {
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     setPermission(notificationScheduler.getPermission());
+
+    // Detect if running on mobile (Capacitor)
+    if (typeof window !== 'undefined' && window.Capacitor) {
+      setIsMobile(true);
+    }
   }, []);
 
   const handleRequestPermission = async () => {
-    const granted = await notificationScheduler.requestPermission();
-    setPermission(notificationScheduler.getPermission());
+    try {
+      const granted = await notificationScheduler.requestPermission();
+      setPermission(notificationScheduler.getPermission());
 
-    if (granted) {
-      // Schedule all upcoming task notifications
-      const count = await notificationScheduler.scheduleAllUpcoming();
-      console.log(`Scheduled ${count} notifications`);
+      if (granted) {
+        // Schedule all upcoming task notifications
+        const count = await notificationScheduler.scheduleAllUpcoming();
+        console.log(`Scheduled ${count} notifications`);
+
+        // Show success message on mobile
+        if (typeof window !== 'undefined' && window.Capacitor) {
+          // On mobile, show a toast or alert (can be enhanced with Toast plugin)
+          console.log('✅ Notifications enabled! You will receive plant care reminders.');
+        }
+      } else {
+        console.warn('Notification permission was not granted');
+        // On mobile, might need to guide user to settings
+        if (typeof window !== 'undefined' && window.Capacitor) {
+          console.log('⚠️ Please enable notifications in your device settings');
+        }
+      }
+    } catch (error) {
+      console.error('Error requesting notification permission:', error);
     }
   };
 
@@ -50,8 +72,9 @@ export function NotificationSetup() {
         <div className="flex-1">
           <h3 className="font-semibold text-lg mb-2">🔔 Enable Reminders</h3>
           <p className="text-sm text-muted-foreground">
-            Get notified when your plants need care. We&apos;ll send browser notifications for due
-            tasks.
+            {isMobile
+              ? "Get notified when your plants need care. We'll send push notifications to your device for due tasks."
+              : "Get notified when your plants need care. We'll send browser notifications for due tasks."}
           </p>
         </div>
         <Button onClick={handleRequestPermission} size="default">

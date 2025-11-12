@@ -24,30 +24,11 @@ export default function ServiceWorkerRegister() {
       register();
     }
 
-    // Mobile-native bridge detection: expose a thin adapter on window
-    try {
-      // If a native bridge is present (in mobile wrapper), connect it
-      // Otherwise expose a web fallback
-      // @ts-ignore
-      if (!window.NativePlantBridge) {
-        // @ts-ignore
-        window.NativePlantBridge = {
-          async takePhoto() {
-            // fallback to HTML input capture
-            return { canceled: true };
-          },
-          async pickImage() {
-            return { canceled: true };
-          },
-          async scheduleNotification(payload: any): Promise<{ scheduled: boolean }> {
-            // No-op fallback
-            return { scheduled: false };
-          },
-        };
-      }
-    } catch (e) {
-      // ignore
-    }
+    // Import and initialize the native bridge
+    // This will set up proper Capacitor integration or web fallback
+    import('@/mobile-wrapper/nativeBridge').catch((err) => {
+      console.warn('Failed to load native bridge:', err);
+    });
   }, []);
 
   return null;
