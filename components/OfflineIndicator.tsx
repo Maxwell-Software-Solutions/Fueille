@@ -15,10 +15,12 @@ export function OfflineIndicator() {
   useEffect(() => {
     // Initialize with current status
     setIsOnline(navigator.onLine);
+    setShowBanner(!navigator.onLine);
 
     const handleOnline = () => {
       setIsOnline(true);
-      // Keep banner visible for 2 seconds to show "Back online" message
+      setShowBanner(true); // Show "back online" message
+      // Hide banner after 2 seconds
       setTimeout(() => setShowBanner(false), 2000);
     };
 

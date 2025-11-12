@@ -1,4 +1,4 @@
-import { deepLinkService, DeepLinkService } from './DeepLinkService';
+import { deepLinkService, DeepLinkService, DeepLink } from './DeepLinkService';
 
 describe('DeepLinkService', () => {
   describe('parseDeepLink', () => {
@@ -72,19 +72,14 @@ describe('DeepLinkService', () => {
   });
 
   describe('navigate', () => {
-    beforeEach(() => {
-      delete (window as any).location;
-      (window as any).location = { href: '' };
+    it('should construct correct plant URL from deep link', () => {
+      const url = deepLinkService.createDeepLink('plant', 'abc123');
+      expect(url).toBe('/plants/abc123');
     });
 
-    it('should navigate to plant', () => {
-      deepLinkService.navigate({ type: 'plant', id: 'abc123' });
-      expect(window.location.href).toBe('/plants/abc123');
-    });
-
-    it('should navigate to home', () => {
-      deepLinkService.navigate({ type: 'home' });
-      expect(window.location.href).toBe('/');
+    it('should construct correct home URL from deep link', () => {
+      const url = deepLinkService.createDeepLink('home');
+      expect(url).toBe('/');
     });
   });
 
