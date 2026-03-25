@@ -79,12 +79,20 @@ export async function identifyPlant(
   }
 
   let input: string | HTMLImageElement;
+  let blobUrl: string | null = null;
 
   if (imageSource instanceof File) {
-    // Convert File to a blob URL the model can read
-    input = URL.createObjectURL(imageSource);
+    blobUrl = URL.createObjectURL(imageSource);
+    input = blobUrl;
+  } else if (imageSource instanceof HTMLImageElement) {
+    input = imageSource;
   } else {
     input = imageSource;
+  }
+
+  // SVGs can't be decoded by the model — rasterize to PNG data URL via canvas
+  if (typeof input === 'string' && input.endsWith('.svg')) {
+    input = await rasterizeSvg(input);
   }
 
   try {
@@ -95,11 +103,31 @@ export async function identifyPlant(
       score: r.score,
     }));
   } finally {
-    // Clean up blob URL if we created one
-    if (imageSource instanceof File && typeof input === 'string') {
-      URL.revokeObjectURL(input);
+    if (blobUrl) {
+      URL.revokeObjectURL(blobUrl);
     }
   }
+}
+
+/**
+ * Render an SVG URL to a PNG blob URL via an offscreen canvas.
+ */
+async function rasterizeSvg(svgUrl: string, size = 224): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return reject(new Error('Canvas not supported'));
+      ctx.drawImage(img, 0, 0, size, size);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => reject(new Error('Failed to load SVG'));
+    img.src = svgUrl;
+  });
 }
 
 /**
