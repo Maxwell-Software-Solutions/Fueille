@@ -9,6 +9,7 @@ interface MarkerIconProps {
   marker: PlantMarker & { plant?: { name: string; thumbnailUrl?: string } };
   onClick?: () => void;
   isSelected?: boolean;
+  isHighlighted?: boolean;
   isDragging?: boolean;
   draggable?: boolean;
   onDragStart?: () => void;
@@ -20,6 +21,7 @@ export function MarkerIcon({
   marker,
   onClick,
   isSelected,
+  isHighlighted = false,
   isDragging,
   draggable = false,
   onDragStart,
@@ -101,7 +103,8 @@ export function MarkerIcon({
         !draggable && 'cursor-pointer hover:scale-110',
         draggable && 'cursor-grab active:cursor-grabbing',
         draggable && 'ring-2 ring-primary/50 rounded-full',
-        isSelected && 'scale-125 z-10',
+        isHighlighted && 'scale-125 z-20',
+        isSelected && !isHighlighted && 'scale-125 z-10',
         isDragging && 'z-20 scale-110 opacity-80'
       )}
       style={{
@@ -120,8 +123,9 @@ export function MarkerIcon({
         className={cn(
           'w-12 h-12 rounded-full flex items-center justify-center text-2xl',
           'bg-white dark:bg-gray-800 shadow-md',
-          isSelected && 'ring-4 ring-primary',
-          draggable && !isSelected && 'ring-2 ring-primary/40'
+          isHighlighted && 'ring-4 ring-yellow-400 shadow-lg shadow-yellow-400/30',
+          isSelected && !isHighlighted && 'ring-4 ring-primary',
+          draggable && !isSelected && !isHighlighted && 'ring-2 ring-primary/40'
         )}
       >
         {marker.plant?.thumbnailUrl ? (

@@ -13,6 +13,7 @@ interface LayoutViewerProps {
   onMarkerMove?: (markerId: string, posX: number, posY: number) => void;
   editable?: boolean;
   moveMode?: boolean;
+  highlightedPlantId?: string | null;
 }
 
 export function LayoutViewer({
@@ -22,6 +23,7 @@ export function LayoutViewer({
   onMarkerMove,
   editable = false,
   moveMode = false,
+  highlightedPlantId = null,
 }: LayoutViewerProps) {
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
   const [draggedMarkerId, setDraggedMarkerId] = useState<string | null>(null);
@@ -93,6 +95,7 @@ export function LayoutViewer({
               marker={displayMarker}
               onClick={() => handleMarkerClick(marker)}
               isSelected={selectedMarkerId === marker.id}
+              isHighlighted={highlightedPlantId === marker.plantId}
               isDragging={isBeingDragged}
               draggable={moveMode}
               onDragStart={() => handleDragStart(marker.id)}

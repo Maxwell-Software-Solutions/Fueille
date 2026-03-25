@@ -19,6 +19,7 @@ export default function LayoutDetailPage({ params }: { params: { id: string } })
   const [layout, setLayout] = useState<Layout | null>(null);
   const [markers, setMarkers] = useState<Array<PlantMarker & { plant?: Plant }>>([]);
   const [loading, setLoading] = useState(true);
+  const [highlightedPlantId, setHighlightedPlantId] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -54,7 +55,6 @@ export default function LayoutDetailPage({ params }: { params: { id: string } })
   };
 
   const handleMarkerClick = (marker: PlantMarker) => {
-    // Navigate to plant detail
     if (marker.plantId) {
       router.push(`/plants/${marker.plantId}`);
     }
@@ -88,7 +88,12 @@ export default function LayoutDetailPage({ params }: { params: { id: string } })
 
       {/* Layout viewer */}
       <Card className="p-4 mb-8">
-        <LayoutViewer layout={layout} markers={markers} onMarkerClick={handleMarkerClick} />
+        <LayoutViewer
+          layout={layout}
+          markers={markers}
+          onMarkerClick={handleMarkerClick}
+          highlightedPlantId={highlightedPlantId}
+        />
       </Card>
 
       {/* Plant list */}
@@ -104,10 +109,21 @@ export default function LayoutDetailPage({ params }: { params: { id: string } })
         ) : (
           <ul className="space-y-2">
             {markers.map((marker) => (
-              <li key={marker.id}>
+              <li
+                key={marker.id}
+                onMouseEnter={() => setHighlightedPlantId(marker.plantId)}
+                onMouseLeave={() => setHighlightedPlantId(null)}
+                onTouchStart={() => setHighlightedPlantId(marker.plantId)}
+                onTouchEnd={() => setHighlightedPlantId(null)}
+                onTouchCancel={() => setHighlightedPlantId(null)}
+              >
                 <Link
                   href={`/plants/${marker.plantId}`}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
+                    highlightedPlantId === marker.plantId
+                      ? 'bg-yellow-100 dark:bg-yellow-900/30'
+                      : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
                 >
                   <span className="text-2xl">{marker.icon || '🌱'}</span>
                   <span className="font-medium">{marker.plant?.name || 'Unknown'}</span>
