@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { initDatabase } from '@/lib/domain';
+import { getDatabase } from '@/lib/domain/database';
 
 /**
  * DatabaseInitializer - Initialize IndexedDB on app startup
- * Runs on the client side to set up offline-first data layer
+ * Runs on the client side to set up offline-first data layer.
+ * In development, auto-seeds with mock data when the database is empty.
  */
 export default function DatabaseInitializer() {
   const [initialized, setInitialized] = useState(false);
@@ -15,6 +17,25 @@ export default function DatabaseInitializer() {
     const init = async () => {
       try {
         await initDatabase();
+
+        // Auto-seed in development when the database is empty
+        if (process.env.NODE_ENV === 'development') {
+          const db = getDatabase();
+          const plantCount = await db.plants.count();
+          if (plantCount === 0) {
+            console.log('🌱 Empty database detected in dev — auto-seeding mock data…');
+            const res = await fetch('/mock-data/current.json');
+            if (res.ok) {
+              const fixture = await res.json();
+              const { seedDatabase } = await import('@/lib/dev/seedDatabase');
+              await seedDatabase(fixture, 'replace');
+              console.log(`✓ Auto-seeded ${fixture.meta.plantCount} plants (seed=${fixture.meta.seed})`);
+              window.location.reload();
+              return;
+            }
+          }
+        }
+
         setInitialized(true);
         console.log('✓ IndexedDB initialized');
       } catch (err) {

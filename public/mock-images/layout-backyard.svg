@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <pattern id="grass" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect width="20" height="20" fill="#7cad4b"/>
+      <circle cx="5" cy="10" r="1" fill="#6a9a3e"/>
+      <circle cx="15" cy="5" r="1" fill="#6a9a3e"/>
+      <circle cx="10" cy="18" r="1" fill="#6a9a3e"/>
+    </pattern>
+  </defs>
+  <!-- Grass -->
+  <rect width="1600" height="900" fill="url(#grass)"/>
+  <!-- Patio area -->
+  <rect x="50" y="50" width="600" height="400" rx="8" fill="#c4a882" stroke="#a08060" stroke-width="3"/>
+  <!-- Patio tiles -->
+  <line x1="200" y1="50" x2="200" y2="450" stroke="#b09070" stroke-width="1"/>
+  <line x1="350" y1="50" x2="350" y2="450" stroke="#b09070" stroke-width="1"/>
+  <line x1="500" y1="50" x2="500" y2="450" stroke="#b09070" stroke-width="1"/>
+  <line x1="50" y1="175" x2="650" y2="175" stroke="#b09070" stroke-width="1"/>
+  <line x1="50" y1="300" x2="650" y2="300" stroke="#b09070" stroke-width="1"/>
+  <!-- Raised bed 1 -->
+  <rect x="750" y="100" width="350" height="200" rx="6" fill="#8b6914" stroke="#6b4f10" stroke-width="3"/>
+  <rect x="760" y="110" width="330" height="180" rx="4" fill="#3a5a2a"/>
+  <text x="925" y="205" font-family="system-ui" font-size="16" fill="#cde0c0" text-anchor="middle">Raised Bed 1</text>
+  <!-- Raised bed 2 -->
+  <rect x="750" y="380" width="350" height="200" rx="6" fill="#8b6914" stroke="#6b4f10" stroke-width="3"/>
+  <rect x="760" y="390" width="330" height="180" rx="4" fill="#3a5a2a"/>
+  <text x="925" y="485" font-family="system-ui" font-size="16" fill="#cde0c0" text-anchor="middle">Raised Bed 2</text>
+  <!-- Pots row -->
+  <circle cx="200" cy="550" r="40" fill="#b5651d" stroke="#8b4513" stroke-width="2"/>
+  <circle cx="320" cy="550" r="40" fill="#b5651d" stroke="#8b4513" stroke-width="2"/>
+  <circle cx="440" cy="550" r="40" fill="#b5651d" stroke="#8b4513" stroke-width="2"/>
+  <circle cx="560" cy="550" r="40" fill="#b5651d" stroke="#8b4513" stroke-width="2"/>
+  <text x="380" y="625" font-family="system-ui" font-size="14" fill="#4a6a3a" text-anchor="middle">Pot Row</text>
+  <!-- Garden path -->
+  <rect x="680" y="320" width="50" height="40" rx="4" fill="#d4c4a0"/>
+  <rect x="680" y="100" width="50" height="500" rx="4" fill="#d4c4a0" opacity="0.5"/>
+  <!-- Fence -->
+  <rect x="10" y="10" width="1580" height="880" fill="none" stroke="#8b6914" stroke-width="6" stroke-dasharray="20 10" rx="8"/>
+  <!-- Water feature -->
+  <circle cx="1350" cy="250" r="80" fill="#6baacc" stroke="#4a8aaa" stroke-width="3"/>
+  <circle cx="1350" cy="250" r="50" fill="#7bbcdc"/>
+  <text x="1350" y="255" font-family="system-ui" font-size="14" fill="#2a6a8a" text-anchor="middle">Pond</text>
+  <!-- Shed -->
+  <rect x="1250" y="600" width="250" height="180" rx="4" fill="#8b7355" stroke="#6b5335" stroke-width="3"/>
+  <rect x="1340" y="700" width="60" height="80" fill="#6b5335"/>
+  <text x="1375" y="670" font-family="system-ui" font-size="16" fill="#d4c4a0" text-anchor="middle">Shed</text>
+  <!-- Label -->
+  <text x="800" y="860" font-family="system-ui" font-size="22" font-weight="600" fill="#2a4a1a" text-anchor="middle">Backyard Garden</text>
+</svg>
