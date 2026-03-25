@@ -84,7 +84,8 @@ export function LayoutEditor({
   };
 
   const handleIdentifyPlants = async () => {
-    if (!layout.imageUri && !layout.remoteImageUrl) {
+    const imageSource = layout.imageUri || layout.remoteImageUrl;
+    if (!imageSource) {
       setIdentificationResult('No layout image available');
       return;
     }
@@ -93,34 +94,20 @@ export function LayoutEditor({
     setIdentificationResult(null);
 
     try {
-      const response = await fetch('/api/identify-plants', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          layoutId: layout.id,
-          imageUrl: layout.remoteImageUrl,
-          imageData: layout.imageUri,
-          autoCreatePlants: true,
-          autoCreateMarkers: true,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
+      const { identifyPlant } = await import('@/lib/ai/localPlantIdentifier');
+      const results = await identifyPlant(imageSource, 5);
+      const top = results[0];
+      if (top) {
         setIdentificationResult(
-          `Identified ${result.plants.length} plant(s) in ${(result.processingTimeMs / 1000).toFixed(1)}s!`
+          `Top prediction: ${top.label} (${(top.score * 100).toFixed(1)}%) — local AI`
         );
-        onMarkersChange?.();
       } else {
-        setIdentificationResult(`Error: ${result.error || 'Unknown error'}`);
+        setIdentificationResult('No predictions returned');
       }
     } catch (error) {
       console.error('Plant identification error:', error);
       setIdentificationResult(
-        `Failed to identify plants: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     } finally {
       setIsIdentifying(false);
