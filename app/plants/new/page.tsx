@@ -2,13 +2,21 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { plantRepository } from '@/lib/domain';
+import { plantRepository, tagRepository } from '@/lib/domain';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { TagPicker } from '@/components/TagPicker';
+import dynamic from 'next/dynamic';
+
+const LocalPlantIdentifier = dynamic(
+  () => import('@/components/LocalPlantIdentifier').then((m) => ({ default: m.LocalPlantIdentifier })),
+  { ssr: false },
+);
 
 export default function NewPlantPage() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     species: '',
@@ -22,12 +30,15 @@ export default function NewPlantPage() {
 
     setSaving(true);
     try {
-      await plantRepository.create({
+      const plant = await plantRepository.create({
         name: formData.name,
         species: formData.species || undefined,
         location: formData.location || undefined,
         notes: formData.notes || undefined,
       });
+      if (selectedTagIds.length > 0) {
+        await tagRepository.setTagsForPlant(plant.id, selectedTagIds);
+      }
       router.push('/plants');
     } catch (error) {
       console.error('Failed to create plant:', error);
@@ -55,6 +66,16 @@ export default function NewPlantPage() {
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="w-full px-4 py-3 neu-pressed rounded-xl bg-background focus:neu-flat transition-all outline-none focus:ring-2 focus:ring-primary/50"
               placeholder="e.g., Snake Plant"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-3">
+              Identify from Photo
+            </label>
+            <LocalPlantIdentifier
+              compact
+              onResult={(label) => setFormData((f) => ({ ...f, species: label, name: f.name || label }))}
             />
           </div>
 
@@ -98,6 +119,11 @@ export default function NewPlantPage() {
               rows={5}
               placeholder="Care instructions, observations, etc."
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-3">Tags</label>
+            <TagPicker selectedTagIds={selectedTagIds} onChange={setSelectedTagIds} placeholder="Add tags..." />
           </div>
 
           <div className="flex gap-4 pt-6">

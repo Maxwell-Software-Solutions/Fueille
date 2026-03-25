@@ -6,13 +6,24 @@ import {
   plantRepository,
   careTaskRepository,
   photoRepository,
+  tagRepository,
   type Plant,
   type CareTask,
   type Photo,
+  type Tag,
 } from '@/lib/domain';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { PhotoCapture } from '@/components/PhotoCapture';
+import { TagBadge } from '@/components/TagBadge';
+import { TagPicker } from '@/components/TagPicker';
+import { SnoozeMenu } from '@/components/SnoozeMenu';
+import dynamic from 'next/dynamic';
+
+const LocalPlantIdentifier = dynamic(
+  () => import('@/components/LocalPlantIdentifier').then((m) => ({ default: m.LocalPlantIdentifier })),
+  { ssr: false },
+);
 
 export default function PlantDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -20,6 +31,8 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
   const [tasks, setTasks] = useState<CareTask[]>([]);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [plantTags, setPlantTags] = useState<Tag[]>([]);
+  const [editTagIds, setEditTagIds] = useState<string[]>([]);
   const [showPhotoCapture, setShowPhotoCapture] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isEditingDetails, setIsEditingDetails] = useState(false);
@@ -44,6 +57,9 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
 
       const plantPhotos = await photoRepository.list({ plantId: params.id });
       setPhotos(plantPhotos);
+
+      const tagsData = await tagRepository.getTagsForPlant(params.id);
+      setPlantTags(tagsData);
     } catch (error) {
       console.error('Failed to load plant:', error);
     } finally {
@@ -63,8 +79,9 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
         location: plant.location || '',
         notes: plant.notes || '',
       });
+      setEditTagIds(plantTags.map((t) => t.id));
     }
-  }, [plant, isEditingDetails]);
+  }, [plant, isEditingDetails, plantTags]);
 
   const handleDelete = async () => {
     if (!confirm('Delete this plant? This cannot be undone.')) return;
@@ -151,6 +168,7 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
         location: editFormData.location || undefined,
         notes: editFormData.notes || undefined,
       });
+      await tagRepository.setTagsForPlant(plant.id, editTagIds);
       await loadPlantData();
       setIsEditingDetails(false);
     } catch (error) {
@@ -330,22 +348,37 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
         </div>
 
         {isEditingDetails ? (
-          <div className="mt-4">
-            <label className="block text-sm font-semibold mb-2">Notes</label>
-            <textarea
-              value={editFormData.notes}
-              onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })}
-              className="w-full px-4 py-3 neu-pressed rounded-xl bg-background focus:neu-flat transition-all outline-none focus:ring-2 focus:ring-primary/50 resize-none"
-              rows={4}
-              placeholder="Care instructions, observations, etc."
-            />
-          </div>
-        ) : (
-          plant.notes && (
-            <div className="mt-4 p-4 bg-muted rounded-lg">
-              <p className="text-sm whitespace-pre-wrap">{plant.notes}</p>
+          <>
+            <div className="mt-4">
+              <label className="block text-sm font-semibold mb-2">Notes</label>
+              <textarea
+                value={editFormData.notes}
+                onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })}
+                className="w-full px-4 py-3 neu-pressed rounded-xl bg-background focus:neu-flat transition-all outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+                rows={4}
+                placeholder="Care instructions, observations, etc."
+              />
             </div>
-          )
+            <div className="mt-4">
+              <label className="block text-sm font-semibold mb-2">Tags</label>
+              <TagPicker selectedTagIds={editTagIds} onChange={setEditTagIds} />
+            </div>
+          </>
+        ) : (
+          <>
+            {plant.notes && (
+              <div className="mt-4 p-4 bg-muted rounded-lg">
+                <p className="text-sm whitespace-pre-wrap">{plant.notes}</p>
+              </div>
+            )}
+            {plantTags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {plantTags.map((tag) => (
+                  <TagBadge key={tag.id} name={tag.name} color={tag.color} />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </Card>
 
@@ -399,6 +432,11 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
                           ✓ Done
                         </span>
                       )}
+                      {task.snoozedUntil && new Date(task.snoozedUntil) > new Date() && (
+                        <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded flex-shrink-0">
+                          Snoozed until {new Date(task.snoozedUntil).toLocaleDateString()}
+                        </span>
+                      )}
                     </div>
                     {task.description && (
                       <p
@@ -420,13 +458,15 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
                     )}
                   </div>
                   {!task.completedAt && (
-                    <Button
-                      size="sm"
-                      onClick={() => handleCompleteTask(task.id)}
-                      className="flex-shrink-0"
-                    >
-                      Complete
-                    </Button>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <SnoozeMenu taskId={task.id} onSnoozed={loadPlantData} />
+                      <Button
+                        size="sm"
+                        onClick={() => handleCompleteTask(task.id)}
+                      >
+                        Complete
+                      </Button>
+                    </div>
                   )}
                 </div>
               </Card>
@@ -513,6 +553,21 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
           })}
         </div>
       )}
+
+      {/* Local AI Identification */}
+      <Card className="p-6 mt-8">
+        <h2 className="text-2xl font-bold mb-4">Identify with AI</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Runs locally in your browser — no internet needed after first download.
+        </p>
+        <LocalPlantIdentifier
+          imageUrl={plant.thumbnailUrl}
+          onResult={async (label) => {
+            await plantRepository.update({ ...plant, species: label });
+            await loadPlantData();
+          }}
+        />
+      </Card>
     </div>
   );
 }

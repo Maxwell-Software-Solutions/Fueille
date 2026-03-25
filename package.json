@@ -33,7 +33,13 @@
     "generate:resolver": "plop resolver",
     "generate:api": "plop api-route",
     "generate:e2e": "plop e2e-test",
-    "prepare": "husky"
+    "prepare": "husky",
+    "seed:generate": "tsx scripts/seed/generate-fixtures.ts",
+    "seed:generate:random": "tsx scripts/seed/generate-fixtures.ts --random",
+    "seed:generate:minimal": "tsx scripts/seed/generate-fixtures.ts --preset=minimal",
+    "seed:generate:large": "tsx scripts/seed/generate-fixtures.ts --preset=large",
+    "seed:generate:stress": "tsx scripts/seed/generate-fixtures.ts --preset=stress",
+    "seed": "pnpm seed:generate"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.31",
@@ -44,6 +50,7 @@
     "@as-integrations/next": "^4.0.0",
     "@capacitor/core": "^7.4.4",
     "@capacitor/local-notifications": "^7.0.3",
+    "@huggingface/transformers": "^3.8.1",
     "@octokit/rest": "^22.0.0",
     "@paralleldrive/cuid2": "^3.0.4",
     "@prisma/client": "^6.18.0",
@@ -64,6 +71,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.3.0",
     "@lhci/cli": "^0.13.0",
     "@playwright/test": "^1.56.1",
     "@testing-library/dom": "^10.4.1",
@@ -81,6 +89,7 @@
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.0",
     "eslint-config-prettier": "^9.1.0",
+    "fake-indexeddb": "^6.2.5",
     "husky": "^9.1.7",
     "jest": "^30.2.0",
     "jest-environment-jsdom": "^30.2.0",
@@ -91,6 +100,7 @@
     "tailwindcss": "3",
     "ts-jest": "^29.4.5",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "turbo": "^2.0.0",
     "typescript": "^5.4.0"
   },
