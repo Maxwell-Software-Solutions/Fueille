@@ -19,8 +19,8 @@ export function LayoutEditor({
   onMarkersChange,
 }: LayoutEditorProps) {
   const [isAddingMarker, setIsAddingMarker] = useState(false);
+  const [moveMode, setMoveMode] = useState(false);
   const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
-  const [draggedMarkerId, setDraggedMarkerId] = useState<string | null>(null);
   const [isIdentifying, setIsIdentifying] = useState(false);
   const [identificationResult, setIdentificationResult] = useState<string | null>(null);
 
@@ -28,9 +28,13 @@ export function LayoutEditor({
     async (e: React.MouseEvent<HTMLDivElement>) => {
       if (!isAddingMarker || !selectedPlantId) return;
 
-      const rect = e.currentTarget.getBoundingClientRect();
+      const canvas = (e.currentTarget as HTMLElement).querySelector('[data-layout-canvas]');
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 100;
       const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+      if (x < 0 || x > 100 || y < 0 || y > 100) return;
 
       await plantMarkerRepository.create({
         layoutId: layout.id,
@@ -46,20 +50,35 @@ export function LayoutEditor({
     [isAddingMarker, selectedPlantId, layout.id, onMarkersChange]
   );
 
-  const handleMarkerDragStart = (markerId: string) => {
-    setDraggedMarkerId(markerId);
-  };
-
-  const handleMarkerDragEnd = async (markerId: string, newX: number, newY: number) => {
-    await plantMarkerRepository.updatePosition(markerId, newX, newY);
-    setDraggedMarkerId(null);
-    onMarkersChange?.();
-  };
+  const handleMarkerMove = useCallback(
+    async (markerId: string, posX: number, posY: number) => {
+      await plantMarkerRepository.updatePosition(markerId, posX, posY);
+      onMarkersChange?.();
+    },
+    [onMarkersChange]
+  );
 
   const handleDeleteMarker = async (markerId: string) => {
     if (!confirm('Remove this plant from the layout?')) return;
     await plantMarkerRepository.delete(markerId);
     onMarkersChange?.();
+  };
+
+  const toggleMoveMode = () => {
+    setMoveMode((m) => !m);
+    // Exit add mode when entering move mode
+    if (!moveMode) {
+      setIsAddingMarker(false);
+      setSelectedPlantId(null);
+    }
+  };
+
+  const toggleAddMode = () => {
+    setIsAddingMarker((a) => !a);
+    // Exit move mode when entering add mode
+    if (!isAddingMarker) {
+      setMoveMode(false);
+    }
   };
 
   const handleIdentifyPlants = async () => {
@@ -90,16 +109,16 @@ export function LayoutEditor({
 
       if (result.success) {
         setIdentificationResult(
-          `✅ Identified ${result.plants.length} plant(s) in ${(result.processingTimeMs / 1000).toFixed(1)}s!`
+          `Identified ${result.plants.length} plant(s) in ${(result.processingTimeMs / 1000).toFixed(1)}s!`
         );
-        onMarkersChange?.(); // Refresh to show new plants/markers
+        onMarkersChange?.();
       } else {
-        setIdentificationResult(`❌ Error: ${result.error || 'Unknown error'}`);
+        setIdentificationResult(`Error: ${result.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Plant identification error:', error);
       setIdentificationResult(
-        `❌ Failed to identify plants: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to identify plants: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     } finally {
       setIsIdentifying(false);
@@ -109,27 +128,37 @@ export function LayoutEditor({
   return (
     <div className="space-y-4">
       {/* Toolbar */}
-      <div className="flex gap-4 items-center flex-wrap">
+      <div className="flex gap-2 items-center flex-wrap">
         <Button
-          onClick={() => setIsAddingMarker(!isAddingMarker)}
+          onClick={toggleAddMode}
           variant={isAddingMarker ? 'default' : 'outline'}
+          size="default"
         >
           {isAddingMarker ? 'Cancel' : 'Add Plant'}
+        </Button>
+
+        <Button
+          onClick={toggleMoveMode}
+          variant={moveMode ? 'default' : 'outline'}
+          size="default"
+        >
+          {moveMode ? 'Done Moving' : 'Move Plants'}
         </Button>
 
         <Button
           onClick={handleIdentifyPlants}
           disabled={isIdentifying || !layout.imageUri}
           variant="outline"
+          size="default"
         >
-          {isIdentifying ? '🔍 Identifying...' : '🔍 Identify Plants with AI'}
+          {isIdentifying ? 'Identifying...' : 'Identify with AI'}
         </Button>
 
         {isAddingMarker && (
           <select
             value={selectedPlantId || ''}
             onChange={(e) => setSelectedPlantId(e.target.value)}
-            className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
+            className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm"
           >
             <option value="">Select a plant...</option>
             {availablePlants.map((plant) => (
@@ -141,11 +170,11 @@ export function LayoutEditor({
         )}
       </div>
 
-      {/* Identification result */}
+      {/* Status messages */}
       {identificationResult && (
         <div
-          className={`p-4 rounded-lg ${
-            identificationResult.startsWith('✅')
+          className={`p-4 rounded-lg text-sm ${
+            identificationResult.startsWith('Identified')
               ? 'bg-green-50 dark:bg-green-900/20 text-green-900 dark:text-green-100'
               : 'bg-red-50 dark:bg-red-900/20 text-red-900 dark:text-red-100'
           }`}
@@ -154,22 +183,33 @@ export function LayoutEditor({
         </div>
       )}
 
-      {/* Instructions */}
       {isAddingMarker && selectedPlantId && (
-        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-          Click on the image to place the plant marker
+        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-sm">
+          Tap on the layout to place the plant marker
+        </div>
+      )}
+
+      {moveMode && (
+        <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg text-sm text-amber-900 dark:text-amber-100">
+          Drag any plant marker to reposition it
         </div>
       )}
 
       {/* Layout viewer */}
-      <div onClick={handleImageClick} className={isAddingMarker ? 'cursor-crosshair' : ''}>
+      <div
+        onClick={isAddingMarker ? handleImageClick : undefined}
+        className={isAddingMarker && selectedPlantId ? 'cursor-crosshair' : ''}
+      >
         <LayoutViewer
           layout={layout}
           markers={markers}
           editable
+          moveMode={moveMode}
+          onMarkerMove={handleMarkerMove}
           onMarkerClick={(marker) => {
-            // Show edit options
-            console.log('Edit marker', marker);
+            if (!moveMode) {
+              console.log('Edit marker', marker);
+            }
           }}
         />
       </div>
