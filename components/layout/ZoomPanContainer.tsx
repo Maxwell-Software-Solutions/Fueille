@@ -99,36 +99,30 @@ export function ZoomPanContainer({
 
   const zoomPercent = Math.round(zoom * 100);
   const isDefault = zoom === initialZoom && pan.x === 0 && pan.y === 0;
+  const btnClass =
+    'w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors';
 
   return (
-    <div className="relative">
-      {/* Controls */}
-      <div className="absolute top-3 right-3 z-20 flex items-center gap-1 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg shadow-md px-1.5 py-1 text-sm">
-        <button
-          onClick={zoomOut}
-          className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors font-bold"
-          title="Zoom out"
-        >
-          −
+    <div>
+      {/* Controls bar — above the canvas */}
+      <div className="flex items-center justify-end gap-1 mb-2 px-1">
+        <button onClick={zoomOut} className={btnClass} title="Zoom out">
+          <span className="font-bold text-base">−</span>
         </button>
-        <span className="w-10 text-center text-xs font-medium tabular-nums">{zoomPercent}%</span>
-        <button
-          onClick={zoomIn}
-          className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors font-bold"
-          title="Zoom in"
-        >
-          +
+        <span className="w-12 text-center text-xs font-medium tabular-nums text-muted-foreground">
+          {zoomPercent}%
+        </span>
+        <button onClick={zoomIn} className={btnClass} title="Zoom in">
+          <span className="font-bold text-base">+</span>
         </button>
-        <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-0.5" />
+        <div className="w-px h-5 bg-border mx-1" />
         <button
           onClick={() => setPanEnabled((p) => !p)}
           className={cn(
-            'w-7 h-7 flex items-center justify-center rounded transition-colors',
-            panEnabled
-              ? 'bg-primary text-primary-foreground'
-              : 'hover:bg-gray-200 dark:hover:bg-gray-700'
+            btnClass,
+            panEnabled && 'bg-primary text-primary-foreground hover:bg-primary/90'
           )}
-          title={panEnabled ? 'Disable pan (click to lock)' : 'Enable pan (click to drag)'}
+          title={panEnabled ? 'Lock view' : 'Pan image'}
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M8 2v12M2 8h12M8 2l-2 2M8 2l2 2M8 14l-2-2M8 14l2-2M2 8l2-2M2 8l2 2M14 8l-2-2M14 8l-2 2" />
@@ -136,12 +130,8 @@ export function ZoomPanContainer({
         </button>
         {!isDefault && (
           <>
-            <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-0.5" />
-            <button
-              onClick={resetView}
-              className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-              title="Reset view"
-            >
+            <div className="w-px h-5 bg-border mx-1" />
+            <button onClick={resetView} className={btnClass} title="Reset view">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M1 1v4h4M13 13V9H9" />
                 <path d="M2 9a5.5 5.5 0 019.5-3M12 5a5.5 5.5 0 01-9.5 3" />
@@ -155,7 +145,7 @@ export function ZoomPanContainer({
       <div
         ref={containerRef}
         className={cn(
-          'relative w-full h-full overflow-hidden bg-gray-100 dark:bg-gray-900 touch-none',
+          'relative w-full h-full overflow-hidden bg-gray-100 dark:bg-gray-900 rounded-lg touch-none',
           panEnabled && 'cursor-grab',
           panEnabled && isPanning && 'cursor-grabbing'
         )}

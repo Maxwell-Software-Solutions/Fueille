@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { LayoutViewer } from './LayoutViewer';
 import { Button } from '@/components/ui/button';
 import { plantMarkerRepository, type Layout, type PlantMarker, type Plant } from '@/lib/domain';
@@ -18,6 +19,7 @@ export function LayoutEditor({
   availablePlants,
   onMarkersChange,
 }: LayoutEditorProps) {
+  const router = useRouter();
   const [isAddingMarker, setIsAddingMarker] = useState(false);
   const [moveMode, setMoveMode] = useState(false);
   const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
@@ -207,8 +209,8 @@ export function LayoutEditor({
           moveMode={moveMode}
           onMarkerMove={handleMarkerMove}
           onMarkerClick={(marker) => {
-            if (!moveMode) {
-              console.log('Edit marker', marker);
+            if (!moveMode && marker.plantId) {
+              router.push(`/plants/${marker.plantId}`);
             }
           }}
         />
