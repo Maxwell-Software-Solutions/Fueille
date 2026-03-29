@@ -70,15 +70,32 @@ export default function SettingsPage() {
       if (!data.plants || !Array.isArray(data.plants)) {
         throw new Error('Invalid backup file: missing plants array');
       }
+
+      // JSON.parse produces strings for Date fields — rehydrate them back to Date objects
+      // so IndexedDB stores proper Dates that the repositories expect.
+      const toDate = (v: unknown) => (v ? new Date(v as string) : null);
+      const rehydrateDates = (fields: string[], items: unknown[]): unknown[] =>
+        items.map((item) => {
+          const copy = { ...(item as Record<string, unknown>) };
+          for (const f of fields) {
+            if (f in copy) copy[f] = toDate(copy[f]);
+          }
+          return copy;
+        });
+
+      const common = ['createdAt', 'updatedAt', 'deletedAt'];
+      // Cast needed: bulkPut requires the concrete entity type but rehydrated data is unknown[]
+      const r = (fields: string[], src: unknown[]) => rehydrateDates(fields, src) as never[];
+
       const db = getDatabase();
       await Promise.all([
-        data.plants?.length && db.plants.bulkPut(data.plants),
-        data.careTasks?.length && db.careTasks.bulkPut(data.careTasks),
-        data.photos?.length && db.photos.bulkPut(data.photos),
-        data.tags?.length && db.tags.bulkPut(data.tags),
-        data.plantTags?.length && db.plantTags.bulkPut(data.plantTags),
-        data.layouts?.length && db.layouts.bulkPut(data.layouts),
-        data.plantMarkers?.length && db.plantMarkers.bulkPut(data.plantMarkers),
+        data.plants?.length && db.plants.bulkPut(r([...common], data.plants)),
+        data.careTasks?.length && db.careTasks.bulkPut(r([...common, 'dueAt', 'completedAt', 'snoozedUntil'], data.careTasks)),
+        data.photos?.length && db.photos.bulkPut(r([...common, 'takenAt', 'uploadedAt'], data.photos)),
+        data.tags?.length && db.tags.bulkPut(r([...common], data.tags)),
+        data.plantTags?.length && db.plantTags.bulkPut(r([...common], data.plantTags)),
+        data.layouts?.length && db.layouts.bulkPut(r([...common], data.layouts)),
+        data.plantMarkers?.length && db.plantMarkers.bulkPut(r([...common], data.plantMarkers)),
       ].filter(Boolean));
       setImportStatus('success');
       setImportMessage(`Imported successfully!`);

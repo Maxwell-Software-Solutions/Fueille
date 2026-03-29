@@ -69,8 +69,9 @@ export default function NewLayoutPage() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Preview */}
+            {/* Preview — data URL from captured photo, can't use next/image */}
             <div className="relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={formData.imageUri}
                 alt="Layout preview"

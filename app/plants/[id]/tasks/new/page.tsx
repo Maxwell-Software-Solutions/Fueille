@@ -14,7 +14,8 @@ export default function NewTaskPage({ params }: { params: { id: string } }) {
     description: '',
     taskType: 'water' as 'water' | 'fertilize' | 'prune' | 'repot' | 'other',
     dueDate: '',
-    repeatInterval: '' as '' | 'daily' | 'weekly' | 'biweekly' | 'monthly',
+    repeatInterval: '' as '' | 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'custom',
+    repeatCustomDays: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,6 +31,10 @@ export default function NewTaskPage({ params }: { params: { id: string } }) {
         taskType: formData.taskType,
         dueAt: formData.dueDate ? new Date(formData.dueDate) : undefined,
         repeatInterval: formData.repeatInterval || null,
+        repeatCustomDays:
+          formData.repeatInterval === 'custom' && formData.repeatCustomDays
+            ? parseInt(formData.repeatCustomDays, 10)
+            : null,
       });
 
       // Schedule notification if due date set and permission granted
@@ -114,6 +119,7 @@ export default function NewTaskPage({ params }: { params: { id: string } }) {
                 setFormData({
                   ...formData,
                   repeatInterval: e.target.value as typeof formData.repeatInterval,
+                  repeatCustomDays: '',
                 })
               }
               className="w-full px-4 py-3 neu-pressed rounded-xl bg-background focus:neu-flat transition-all outline-none focus:ring-2 focus:ring-primary/50"
@@ -123,8 +129,28 @@ export default function NewTaskPage({ params }: { params: { id: string } }) {
               <option value="weekly">Weekly</option>
               <option value="biweekly">Every 2 weeks</option>
               <option value="monthly">Monthly</option>
+              <option value="custom">Custom interval</option>
             </select>
           </div>
+
+          {formData.repeatInterval === 'custom' && (
+            <div>
+              <label htmlFor="repeatCustomDays" className="block text-sm font-semibold mb-3">
+                Every how many days? *
+              </label>
+              <input
+                id="repeatCustomDays"
+                type="number"
+                min="1"
+                max="365"
+                required
+                value={formData.repeatCustomDays}
+                onChange={(e) => setFormData({ ...formData, repeatCustomDays: e.target.value })}
+                className="w-full px-4 py-3 neu-pressed rounded-xl bg-background focus:neu-flat transition-all outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder="e.g., 14"
+              />
+            </div>
+          )}
 
           <div>
             <label htmlFor="description" className="block text-sm font-semibold mb-3">
