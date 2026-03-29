@@ -25,7 +25,14 @@ export interface PlantIdentificationResult {
   score: number;
 }
 
-let classifierInstance: Awaited<ReturnType<typeof pipeline>> | null = null;
+// pipeline() returns a union of 25+ pipeline types (TS2590 — too complex to represent).
+// We only use it as an image classifier, so define the minimal callable interface.
+type ImageClassifierFn = (
+  input: string | HTMLImageElement,
+  options?: { topk?: number },
+) => Promise<ImageClassificationOutput>;
+
+let classifierInstance: ImageClassifierFn | null = null;
 let loadingPromise: Promise<void> | null = null;
 
 const MODEL_ID = 'Xenova/vit-base-patch16-224';
@@ -44,9 +51,9 @@ export async function loadModel(onProgress?: ProgressCallback): Promise<void> {
   }
 
   loadingPromise = (async () => {
-    classifierInstance = await pipeline('image-classification', MODEL_ID, {
+    classifierInstance = (await pipeline('image-classification', MODEL_ID, {
       progress_callback: onProgress,
-    });
+    })) as unknown as ImageClassifierFn;
   })();
 
   await loadingPromise;

@@ -1,4 +1,5 @@
-import { prisma } from '@/lib/db';
+import { GraphQLError } from 'graphql';
+import { getPrismaClient } from '@/lib/db';
 import {
   identifyPlantsFromLayout,
   isPlantIdentificationAvailable,
@@ -6,40 +7,89 @@ import {
   type PlantIdentificationRequest,
 } from '@/lib/domain';
 
+const DB_UNAVAILABLE_MESSAGE = 'Database not available';
+
 export const resolvers = {
   Query: {
     messages: async () => {
-      return await prisma.message.findMany({
-        include: { author: true },
-        orderBy: { createdAt: 'desc' },
-      });
+      const prisma = getPrismaClient();
+      if (!prisma) return [];
+      try {
+        return await prisma.message.findMany({
+          include: { author: true },
+          orderBy: { createdAt: 'desc' },
+        });
+      } catch (err) {
+        console.error('[resolvers] messages query failed:', err);
+        return [];
+      }
     },
-    message: async (_: any, { id }: { id: string }) => {
-      return await prisma.message.findUnique({
-        where: { id },
-        include: { author: true },
-      });
+    message: async (_: unknown, { id }: { id: string }) => {
+      const prisma = getPrismaClient();
+      if (!prisma) return null;
+      try {
+        return await prisma.message.findUnique({
+          where: { id },
+          include: { author: true },
+        });
+      } catch (err) {
+        console.error('[resolvers] message query failed:', err);
+        return null;
+      }
     },
     users: async () => {
-      return await prisma.user.findMany();
+      const prisma = getPrismaClient();
+      if (!prisma) return [];
+      try {
+        return await prisma.user.findMany();
+      } catch (err) {
+        console.error('[resolvers] users query failed:', err);
+        return [];
+      }
     },
     plantIdentificationAvailable: async () => {
       return isPlantIdentificationAvailable();
     },
   },
   Mutation: {
-    createMessage: async (_: any, { text, authorId }: { text: string; authorId?: string }) => {
-      return await prisma.message.create({
-        data: { text, authorId },
-        include: { author: true },
-      });
+    createMessage: async (_: unknown, { text, authorId }: { text: string; authorId?: string }) => {
+      const prisma = getPrismaClient();
+      if (!prisma) {
+        throw new GraphQLError(DB_UNAVAILABLE_MESSAGE, {
+          extensions: { code: 'BAD_USER_INPUT' },
+        });
+      }
+      try {
+        return await prisma.message.create({
+          data: { text, authorId },
+          include: { author: true },
+        });
+      } catch (err) {
+        console.error('[resolvers] createMessage mutation failed:', err);
+        throw new GraphQLError(DB_UNAVAILABLE_MESSAGE, {
+          extensions: { code: 'BAD_USER_INPUT' },
+        });
+      }
     },
-    deleteMessage: async (_: any, { id }: { id: string }) => {
-      await prisma.message.delete({ where: { id } });
-      return true;
+    deleteMessage: async (_: unknown, { id }: { id: string }) => {
+      const prisma = getPrismaClient();
+      if (!prisma) {
+        throw new GraphQLError(DB_UNAVAILABLE_MESSAGE, {
+          extensions: { code: 'BAD_USER_INPUT' },
+        });
+      }
+      try {
+        await prisma.message.delete({ where: { id } });
+        return true;
+      } catch (err) {
+        console.error('[resolvers] deleteMessage mutation failed:', err);
+        throw new GraphQLError(DB_UNAVAILABLE_MESSAGE, {
+          extensions: { code: 'BAD_USER_INPUT' },
+        });
+      }
     },
     identifyPlantsFromLayout: async (
-      _: any,
+      _: unknown,
       {
         layoutId,
         imageUrl,
@@ -53,7 +103,7 @@ export const resolvers = {
         imageData?: string;
         autoCreatePlants?: boolean;
         autoCreateMarkers?: boolean;
-        config?: any;
+        config?: Record<string, unknown>;
       }
     ) => {
       // Validate inputs
@@ -88,11 +138,18 @@ export const resolvers = {
     },
   },
   Message: {
-    author: async (message: any) => {
+    author: async (message: { authorId?: string }) => {
       if (!message.authorId) return null;
-      return await prisma.user.findUnique({
-        where: { id: message.authorId },
-      });
+      const prisma = getPrismaClient();
+      if (!prisma) return null;
+      try {
+        return await prisma.user.findUnique({
+          where: { id: message.authorId },
+        });
+      } catch (err) {
+        console.error('[resolvers] Message.author resolver failed:', err);
+        return null;
+      }
     },
   },
 };

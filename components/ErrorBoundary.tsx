@@ -30,9 +30,29 @@ export class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
+  private persistError(error: Error, errorInfo: React.ErrorInfo): void {
+    try {
+      const raw = localStorage.getItem('fueille:error_log');
+      const log: unknown[] = raw ? (JSON.parse(raw) as unknown[]) : [];
+      log.push({
+        timestamp: new Date().toISOString(),
+        message: error.message,
+        stack: error.stack,
+        componentStack: errorInfo.componentStack,
+      });
+      // Keep only the most recent 50 entries
+      const trimmed = log.slice(-50);
+      localStorage.setItem('fueille:error_log', JSON.stringify(trimmed));
+    } catch {
+      // localStorage may be blocked in private mode or when storage quota is exceeded
+    }
+  }
+
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     this.setState({ error, errorInfo });
+
+    this.persistError(error, errorInfo);
 
     // Hook for error reporting service
     if (typeof window !== 'undefined' && (window as any).reportError) {

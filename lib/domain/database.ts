@@ -30,7 +30,12 @@ export class PlantDatabase extends Dexie {
   constructor() {
     super('PlantTrackerDB');
 
-    // Schema version 1
+    /**
+     * Schema version 1 — initial schema.
+     * Added by: initial setup, 2024-01-01.
+     * Tables: plants, careTasks, photos, tags, plantTags, deviceSync, syncCursor.
+     * No upgrade() needed — Dexie creates all tables fresh on first open.
+     */
     this.version(1).stores({
       plants: 'id, name, species, location, createdAt, updatedAt, deletedAt',
       careTasks:
@@ -42,11 +47,25 @@ export class PlantDatabase extends Dexie {
       syncCursor: 'id, lastSyncAt',
     });
 
-    // Schema version 2 - Add layout tables
-    this.version(2).stores({
-      layouts: 'id, name, type, createdAt, updatedAt, deletedAt',
-      plantMarkers: 'id, layoutId, plantId, createdAt, updatedAt, deletedAt',
-    });
+    /**
+     * Schema version 2 — add layout tables.
+     * Added by: layout feature, 2026-03-29.
+     * Tables added: layouts, plantMarkers.
+     * No data migration needed — both tables start empty for all existing users.
+     * If you remove or rename an index in a future version, write an explicit
+     * upgrade() there instead of relying on Dexie defaults.
+     */
+    this.version(2)
+      .stores({
+        layouts: 'id, name, type, createdAt, updatedAt, deletedAt',
+        plantMarkers: 'id, layoutId, plantId, createdAt, updatedAt, deletedAt',
+      })
+      .upgrade(async (_trans) => {
+        // v2 adds layouts and plantMarkers tables.
+        // No data migration needed — new tables start empty.
+        // If you remove or rename an index in future versions,
+        // write an explicit upgrade() here instead of relying on Dexie defaults.
+      });
   }
 }
 

@@ -15,6 +15,7 @@ export { careTaskRepository, CareTaskRepository } from './repositories/CareTaskR
 export { photoRepository, PhotoRepository } from './repositories/PhotoRepository';
 export { layoutRepository, LayoutRepository } from './repositories/LayoutRepository';
 export { plantMarkerRepository, PlantMarkerRepository } from './repositories/PlantMarkerRepository';
+export { tagRepository, TagRepository } from './repositories/TagRepository';
 
 // Services
 export { mutationQueueService, MutationQueueService } from './services/MutationQueueService';

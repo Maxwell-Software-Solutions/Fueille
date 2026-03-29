@@ -2,6 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  // Prevent @huggingface/transformers from being bundled on the server —
+  // it is a browser-only package and uses import.meta / WASM which Node cannot process.
+  serverExternalPackages: ['@huggingface/transformers', 'onnxruntime-web'],
   experimental: {
     typedRoutes: true,
     optimizePackageImports: ['@apollo/client', 'date-fns'],
@@ -21,6 +24,24 @@ const nextConfig = {
   },
   // Allow @huggingface/transformers WASM and large model files
   webpack(config) {
+    // onnxruntime-web (a dependency of @huggingface/transformers) ships ESM bundles
+    // that use `import.meta`. Webpack 5 must be told these are ESM (javascript/auto)
+    // so it does not reject import.meta as invalid CJS syntax.
+    config.module.rules.push({
+      test: /\.m?js$/,
+      include: /node_modules\/(onnxruntime-web|@huggingface\/transformers)/,
+      type: 'javascript/auto',
+      resolve: { fullySpecified: false },
+    });
+
+    // Enable async WebAssembly so .wasm files loaded by onnxruntime-web can be
+    // imported as async modules rather than static assets.
+    config.experiments = {
+      ...config.experiments,
+      asyncWebAssembly: true,
+      layers: true,
+    };
+
     config.resolve.alias = {
       ...config.resolve.alias,
       sharp$: false,

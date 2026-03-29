@@ -55,3 +55,10 @@ build/
 dist/
 
 /app/generated/prisma
+
+# Mock fixtures — default.json and public/mock-data/current.json are committed
+# Random and preset variants are local-only
+/fixtures/random-*.json
+/fixtures/minimal.json
+/fixtures/large.json
+/fixtures/stress.json

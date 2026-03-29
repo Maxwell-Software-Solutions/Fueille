@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { NotificationSetup } from '@/components/NotificationSetup';
 import { PremiumSection } from '@/components/PremiumSection';
+import { SnoozeMenu } from '@/components/SnoozeMenu';
 
 export default function Home() {
   const [dueTasks, setDueTasks] = useState<Array<CareTask & { plant?: Plant }>>([]);
@@ -191,9 +192,12 @@ export default function Home() {
                       )}
                     </div>
                   </div>
-                  <Button size="default" onClick={() => handleComplete(task.id)}>
-                    Complete
-                  </Button>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <SnoozeMenu taskId={task.id} onSnoozed={loadTasks} />
+                    <Button size="default" onClick={() => handleComplete(task.id)}>
+                      Complete
+                    </Button>
+                  </div>
                 </div>
               </Card>
             );

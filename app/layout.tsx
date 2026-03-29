@@ -5,6 +5,15 @@ import AiInlineRequest from '@/components/AiInlineRequest';
 import Footer from '@/components/Footer';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { Settings } from 'lucide-react';
+
+const SeedPanel =
+  process.env.NODE_ENV === 'development'
+    ? dynamic(
+        () => import('@/components/dev/SeedPanel').then((mod) => ({ default: mod.SeedPanel })),
+        { ssr: false },
+      )
+    : null;
 
 const ServiceWorkerRegister = dynamic(() => import('@/components/ServiceWorkerRegister'), {
   ssr: false,
@@ -90,7 +99,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   Fueille
                 </h1>
               </Link>
-              <ThemeToggle />
+              <div className="flex items-center gap-2">
+                <Link href="/settings" className="p-2 rounded-lg hover:bg-muted transition-colors" aria-label="Settings">
+                  <Settings size={20} />
+                </Link>
+                <ThemeToggle />
+              </div>
             </div>
           </header>
           <OfflineIndicator />
@@ -101,6 +115,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ServiceWorkerRegister />
           {/* Initialize IndexedDB for offline-first data */}
           <DatabaseInitializer />
+          {/* Dev-only seed panel for mock data management */}
+          {SeedPanel && <SeedPanel />}
         </ErrorBoundary>
       </body>
     </html>

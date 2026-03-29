@@ -2,13 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { plantRepository, type Plant } from '@/lib/domain';
+import { plantRepository, tagRepository, type Plant, type Tag } from '@/lib/domain';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { TagBadge } from '@/components/TagBadge';
 
 export default function PlantsPage() {
   const [plants, setPlants] = useState<Plant[]>([]);
   const [loading, setLoading] = useState(true);
+  const [allTags, setAllTags] = useState<Tag[]>([]);
+  const [filterTagIds, setFilterTagIds] = useState<string[]>([]);
+  const [plantTagMap, setPlantTagMap] = useState<Record<string, Tag[]>>({});
 
   useEffect(() => {
     loadPlants();
@@ -18,12 +22,35 @@ export default function PlantsPage() {
     try {
       const allPlants = await plantRepository.list();
       setPlants(allPlants);
+
+      const tags = await tagRepository.list();
+      setAllTags(tags);
+
+      const tagMap: Record<string, Tag[]> = {};
+      for (const plant of allPlants) {
+        tagMap[plant.id] = await tagRepository.getTagsForPlant(plant.id);
+      }
+      setPlantTagMap(tagMap);
     } catch (error) {
       console.error('Failed to load plants:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  const toggleFilterTag = (tagId: string) => {
+    setFilterTagIds((prev) =>
+      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
+    );
+  };
+
+  useEffect(() => {
+    if (filterTagIds.length > 0) {
+      plantRepository.list({ tagIds: filterTagIds }).then(setPlants);
+    } else {
+      plantRepository.list().then(setPlants);
+    }
+  }, [filterTagIds]);
 
   if (loading) {
     return (
@@ -41,6 +68,19 @@ export default function PlantsPage() {
           <Button size="lg">+ Add Plant</Button>
         </Link>
       </div>
+
+      {allTags.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-6">
+          {allTags.map((tag) => (
+            <button key={tag.id} type="button" onClick={() => toggleFilterTag(tag.id)}>
+              <TagBadge
+                name={tag.name}
+                color={filterTagIds.includes(tag.id) ? tag.color : undefined}
+              />
+            </button>
+          ))}
+        </div>
+      )}
 
       {plants.length === 0 ? (
         <Card className="p-12 text-center">
@@ -93,6 +133,13 @@ export default function PlantsPage() {
                   >
                     {plant.notes}
                   </p>
+                )}
+                {plantTagMap[plant.id]?.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-3">
+                    {plantTagMap[plant.id].map((tag) => (
+                      <TagBadge key={tag.id} name={tag.name} color={tag.color} />
+                    ))}
+                  </div>
                 )}
               </Card>
             </Link>

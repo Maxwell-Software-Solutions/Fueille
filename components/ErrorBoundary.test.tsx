@@ -109,4 +109,37 @@ describe('ErrorBoundary', () => {
 
     delete (window as any).reportError;
   });
+
+  it('should persist error to localStorage when an error is caught', () => {
+    const getItemSpy = jest.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
+    const setItemSpy = jest.spyOn(Storage.prototype, 'setItem');
+
+    render(
+      <ErrorBoundary>
+        <ThrowError shouldThrow={true} />
+      </ErrorBoundary>
+    );
+
+    expect(setItemSpy).toHaveBeenCalledWith(
+      'fueille:error_log',
+      expect.stringContaining('Test error')
+    );
+
+    const storedArg = setItemSpy.mock.calls.find(
+      ([key]) => key === 'fueille:error_log'
+    )?.[1] as string | undefined;
+    expect(storedArg).toBeDefined();
+    const parsed = JSON.parse(storedArg!) as Array<{
+      timestamp: string;
+      message: string;
+      stack?: string;
+      componentStack?: string;
+    }>;
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0].message).toBe('Test error');
+    expect(parsed[0].timestamp).toBeDefined();
+
+    getItemSpy.mockRestore();
+    setItemSpy.mockRestore();
+  });
 });
