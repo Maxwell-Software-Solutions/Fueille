@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   plantRepository,
   careTaskRepository,
@@ -203,6 +204,9 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">
+      <Link href="/plants" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1 mb-4">
+        ← My Plants
+      </Link>
       <div className="mb-6 flex items-center justify-between gap-3">
         <Button variant="secondary" onClick={() => router.back()}>
           ← Back

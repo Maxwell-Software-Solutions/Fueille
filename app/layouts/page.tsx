@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { layoutRepository, type Layout } from '@/lib/domain';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -53,15 +52,14 @@ export default function LayoutsPage() {
           {layouts.map((layout) => (
             <Link key={layout.id} href={`/layouts/${layout.id}`}>
               <Card className="hover:shadow-lg transition-all cursor-pointer overflow-hidden">
-                {layout.thumbnailUri && (
-                  <Image
-                    src={layout.thumbnailUri}
-                    alt={layout.name}
-                    width={400}
-                    height={300}
-                    className="w-full h-48 object-cover"
-                  />
-                )}
+                <div className="w-full h-48 bg-muted flex items-center justify-center overflow-hidden">
+                  {layout.thumbnailUri ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={layout.thumbnailUri} alt={layout.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-5xl">{layout.type === 'indoor' ? '🏠' : '🌳'}</span>
+                  )}
+                </div>
                 <div className="p-4">
                   <h3 className="font-semibold text-lg">{layout.name}</h3>
                   {layout.description && (

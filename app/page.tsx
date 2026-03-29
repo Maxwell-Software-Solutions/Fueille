@@ -235,7 +235,7 @@ export default function Home() {
                 <div className="aspect-square relative bg-muted">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={layout.imageUri}
+                    src={layout.thumbnailUri || layout.imageUri}
                     alt={layout.name}
                     className="w-full h-full object-cover"
                   />

@@ -75,6 +75,7 @@ export default function LayoutDetailPage({ params }: { params: { id: string } })
         <div>
           <h1 className="text-3xl font-bold">{layout.name}</h1>
           {layout.description && <p className="text-muted-foreground mt-2">{layout.description}</p>}
+          <p className="text-sm text-muted-foreground mt-1">{markers.length} plant{markers.length !== 1 ? 's' : ''}</p>
         </div>
         <div className="flex gap-2">
           <Link href={`/layouts/${layout.id}/edit`}>
