@@ -47,6 +47,10 @@ const config: Config = {
     // Exclude other pages that depend on repositories with cuid2
     '!app/layouts/**',
     '!app/plants/**',
+    // Exclude plant library page (static UI page — tested via E2E)
+    '!app/plant-library/**',
+    // Exclude static plant care library data (no testable logic)
+    '!lib/plant-care-library.ts',
     // Exclude layout components with complex dependencies
     '!components/layout/**',
     // Exclude utility components not critical for coverage

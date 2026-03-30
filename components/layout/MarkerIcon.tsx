@@ -145,10 +145,11 @@ export function MarkerIcon({
       {/* Label */}
       <div
         className={cn(
-          'px-2 py-1 rounded-md text-xs font-medium whitespace-nowrap',
-          'bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm',
-          'shadow-md'
+          'px-2 py-0.5 rounded-full text-xs font-medium max-w-[8rem] truncate',
+          'bg-black/60 text-white backdrop-blur-sm',
+          'shadow-sm'
         )}
+        title={label}
       >
         {label}
       </div>

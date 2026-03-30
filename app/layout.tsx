@@ -5,7 +5,7 @@ import AiInlineRequest from '@/components/AiInlineRequest';
 import Footer from '@/components/Footer';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { Settings } from 'lucide-react';
+import { BookOpen, Settings } from 'lucide-react';
 
 const SeedPanel =
   process.env.NODE_ENV === 'development'
@@ -100,6 +100,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </h1>
               </Link>
               <div className="flex items-center gap-2">
+                <Link href="/plant-library" className="p-2 rounded-lg hover:bg-muted transition-colors" aria-label="Plant Care Library">
+                  <BookOpen size={20} />
+                </Link>
                 <Link href="/settings" className="p-2 rounded-lg hover:bg-muted transition-colors" aria-label="Settings">
                   <Settings size={20} />
                 </Link>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   careTaskRepository,
@@ -22,6 +22,8 @@ export default function Home() {
   const [layouts, setLayouts] = useState<Layout[]>([]);
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [bulkMessage, setBulkMessage] = useState<string | null>(null);
+  const bulkMessageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     // Check if user has seen the welcome message before
@@ -95,6 +97,46 @@ export default function Home() {
     }
   };
 
+  const showBulkMessage = (message: string) => {
+    setBulkMessage(message);
+    if (bulkMessageTimerRef.current) {
+      clearTimeout(bulkMessageTimerRef.current);
+    }
+    bulkMessageTimerRef.current = setTimeout(() => {
+      setBulkMessage(null);
+    }, 3000);
+  };
+
+  const handleCompleteAll = async () => {
+    try {
+      const count = dueTasks.length;
+      await Promise.all(
+        dueTasks.map((task) => {
+          notificationScheduler.cancelForTask(task.id);
+          return careTaskRepository.complete(task.id);
+        })
+      );
+      await loadTasks();
+      showBulkMessage(`Completed ${count} task${count !== 1 ? 's' : ''}`);
+    } catch (error) {
+      console.error('Failed to complete all tasks:', error);
+    }
+  };
+
+  const handleSnoozeAll = async () => {
+    try {
+      const count = dueTasks.length;
+      const until = new Date();
+      until.setDate(until.getDate() + 1);
+      until.setHours(9, 0, 0, 0);
+      await Promise.all(dueTasks.map((task) => careTaskRepository.snooze(task.id, until)));
+      await loadTasks();
+      showBulkMessage(`Snoozed ${count} task${count !== 1 ? 's' : ''}`);
+    } catch (error) {
+      console.error('Failed to snooze all tasks:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen" suppressHydrationWarning>
@@ -145,8 +187,35 @@ export default function Home() {
       </div>
 
       <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-2">Today&apos;s Tasks</h2>
-        <p className="text-base text-muted-foreground">Care tasks that are due now or overdue</p>
+        <div className="flex items-start justify-between gap-4 mb-2">
+          <h2 className="text-2xl font-bold">Today&apos;s Tasks</h2>
+          {dueTasks.length >= 2 && (
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                data-testid="complete-all-btn"
+                onClick={handleCompleteAll}
+              >
+                Complete All
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                data-testid="snooze-all-btn"
+                onClick={handleSnoozeAll}
+              >
+                Snooze All
+              </Button>
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          <p className="text-base text-muted-foreground">Care tasks that are due now or overdue</p>
+          {bulkMessage && (
+            <span className="text-sm text-muted-foreground animate-pulse">{bulkMessage}</span>
+          )}
+        </div>
       </div>
 
       {dueTasks.length === 0 ? (

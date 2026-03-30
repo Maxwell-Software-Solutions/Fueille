@@ -26,10 +26,31 @@ const LocalPlantIdentifier = dynamic(
   { ssr: false },
 );
 
+const TASK_TYPE_ICONS: Record<CareTask['taskType'], string> = {
+  water: '💧',
+  fertilize: '🌿',
+  prune: '✂️',
+  repot: '🪴',
+  other: '📝',
+};
+
+function formatCompletedAt(date: Date): string {
+  return new Date(date).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+function getMonthGroupKey(date: Date): string {
+  return new Date(date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+}
+
 export default function PlantDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [plant, setPlant] = useState<Plant | null>(null);
   const [tasks, setTasks] = useState<CareTask[]>([]);
+  const [completedTasks, setCompletedTasks] = useState<CareTask[]>([]);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [plantTags, setPlantTags] = useState<Tag[]>([]);
@@ -38,6 +59,7 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
   const [isEditMode, setIsEditMode] = useState(false);
   const [isEditingDetails, setIsEditingDetails] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<'tasks' | 'history'>('tasks');
   const [editFormData, setEditFormData] = useState({
     name: '',
     species: '',
@@ -56,6 +78,18 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
 
       const plantTasks = await careTaskRepository.list({ plantId: params.id });
       setTasks(plantTasks);
+
+      const completedTaskList = await careTaskRepository.list({
+        plantId: params.id,
+        isCompleted: true,
+      });
+      // Sort by completedAt descending (most recent first)
+      completedTaskList.sort((a, b) => {
+        const aTime = a.completedAt ? new Date(a.completedAt).getTime() : 0;
+        const bTime = b.completedAt ? new Date(b.completedAt).getTime() : 0;
+        return bTime - aTime;
+      });
+      setCompletedTasks(completedTaskList);
 
       const plantPhotos = await photoRepository.list({ plantId: params.id });
       setPhotos(plantPhotos);
@@ -402,140 +436,252 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
         )}
       </Card>
 
+      {/* Tab bar */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Care Tasks</h2>
-        <Button data-testid="add-task-btn" onClick={() => router.push(`/plants/${plant.id}/tasks/new`)}>+ Add Task</Button>
+        <div className="flex gap-1 border-b w-full pb-0">
+          <button
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'tasks'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+            onClick={() => setActiveTab('tasks')}
+          >
+            Tasks
+          </button>
+          <button
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'history'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+            onClick={() => setActiveTab('history')}
+          >
+            History
+            {completedTasks.length > 0 && (
+              <span className="ml-1.5 text-xs px-1.5 py-0.5 bg-muted rounded-full">
+                {completedTasks.length}
+              </span>
+            )}
+          </button>
+          <div className="flex-1" />
+          {activeTab === 'tasks' && (
+            <Button data-testid="add-task-btn" onClick={() => router.push(`/plants/${plant.id}/tasks/new`)}>
+              + Add Task
+            </Button>
+          )}
+        </div>
       </div>
 
-      {tasks.length === 0 ? (
-        <Card className="p-8 text-center mb-8">
-          <p className="text-muted-foreground mb-4">No care tasks yet</p>
-          <Button onClick={() => router.push(`/plants/${plant.id}/tasks/new`)}>
-            Add First Task
-          </Button>
-        </Card>
-      ) : (
-        <div className="space-y-3 mb-8">
-          {tasks.map((task) => {
-            const isOverdue = task.dueAt && !task.completedAt && new Date(task.dueAt) < new Date();
-            const isDue =
-              task.dueAt &&
-              !task.completedAt &&
-              new Date(task.dueAt) <= new Date(Date.now() + 86400000);
+      {activeTab === 'tasks' && (
+        <>
+          {tasks.length === 0 ? (
+            <Card className="p-8 text-center mb-8">
+              <p className="text-muted-foreground mb-4">No care tasks yet</p>
+              <Button onClick={() => router.push(`/plants/${plant.id}/tasks/new`)}>
+                Add First Task
+              </Button>
+            </Card>
+          ) : (
+            <div className="space-y-3 mb-8">
+              {tasks.map((task) => {
+                const isOverdue = task.dueAt && !task.completedAt && new Date(task.dueAt) < new Date();
+                const isDue =
+                  task.dueAt &&
+                  !task.completedAt &&
+                  new Date(task.dueAt) <= new Date(Date.now() + 86400000);
+
+                return (
+                  <Card key={task.id} data-testid="task-card" className="p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <h3
+                            className="font-semibold break-words"
+                            style={{ overflowWrap: 'anywhere' }}
+                          >
+                            {task.title}
+                          </h3>
+                          <span className="text-xs px-2 py-1 bg-muted rounded flex-shrink-0">
+                            {task.taskType}
+                          </span>
+                          {isOverdue && (
+                            <span className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded flex-shrink-0">
+                              Overdue
+                            </span>
+                          )}
+                          {isDue && !isOverdue && (
+                            <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded flex-shrink-0">
+                              Due Soon
+                            </span>
+                          )}
+                          {task.completedAt && (
+                            <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded flex-shrink-0">
+                              ✓ Done
+                            </span>
+                          )}
+                          {task.snoozedUntil && new Date(task.snoozedUntil) > new Date() && (
+                            <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded flex-shrink-0">
+                              Snoozed until {new Date(task.snoozedUntil).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                        {task.description && (
+                          <p
+                            className="text-sm text-muted-foreground break-words"
+                            style={{ overflowWrap: 'anywhere' }}
+                          >
+                            {task.description}
+                          </p>
+                        )}
+                        {task.dueAt && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Due: {new Date(task.dueAt).toLocaleDateString()}
+                          </p>
+                        )}
+                        {task.repeatInterval && (
+                          <p className="text-xs text-muted-foreground">
+                            Repeats: {task.repeatInterval}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <Button
+                          data-testid="task-edit-btn"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => router.push(`/plants/${params.id}/tasks/${task.id}/edit`)}
+                        >
+                          Edit
+                        </Button>
+                        {!task.completedAt && (
+                          <>
+                            <SnoozeMenu taskId={task.id} onSnoozed={loadPlantData} />
+                            <Button
+                              data-testid="task-complete-btn"
+                              size="sm"
+                              onClick={() => handleCompleteTask(task.id)}
+                            >
+                              Complete
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+
+          {tasks.length > 0 && (() => {
+            const now = new Date();
+            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            const thisWeek = tasks.filter(
+              (t) => t.completedAt && new Date(t.completedAt) >= weekAgo
+            ).length;
+            const thisMonth = tasks.filter((t) => {
+              if (!t.completedAt) return false;
+              const d = new Date(t.completedAt);
+              return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+            }).length;
+            const totalDone = tasks.filter((t) => t.completedAt != null).length;
+            const pending = tasks.filter((t) => !t.completedAt && !t.deletedAt).length;
 
             return (
-              <Card key={task.id} data-testid="task-card" className="p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <h3
-                        className="font-semibold break-words"
-                        style={{ overflowWrap: 'anywhere' }}
-                      >
-                        {task.title}
-                      </h3>
-                      <span className="text-xs px-2 py-1 bg-muted rounded flex-shrink-0">
-                        {task.taskType}
-                      </span>
-                      {isOverdue && (
-                        <span className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded flex-shrink-0">
-                          Overdue
-                        </span>
-                      )}
-                      {isDue && !isOverdue && (
-                        <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded flex-shrink-0">
-                          Due Soon
-                        </span>
-                      )}
-                      {task.completedAt && (
-                        <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded flex-shrink-0">
-                          ✓ Done
-                        </span>
-                      )}
-                      {task.snoozedUntil && new Date(task.snoozedUntil) > new Date() && (
-                        <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded flex-shrink-0">
-                          Snoozed until {new Date(task.snoozedUntil).toLocaleDateString()}
-                        </span>
-                      )}
-                    </div>
-                    {task.description && (
-                      <p
-                        className="text-sm text-muted-foreground break-words"
-                        style={{ overflowWrap: 'anywhere' }}
-                      >
-                        {task.description}
-                      </p>
-                    )}
-                    {task.dueAt && (
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Due: {new Date(task.dueAt).toLocaleDateString()}
-                      </p>
-                    )}
-                    {task.repeatInterval && (
-                      <p className="text-xs text-muted-foreground">
-                        Repeats: {task.repeatInterval}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <Button
-                      data-testid="task-edit-btn"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => router.push(`/plants/${params.id}/tasks/${task.id}/edit`)}
-                    >
-                      Edit
-                    </Button>
-                    {!task.completedAt && (
-                      <>
-                        <SnoozeMenu taskId={task.id} onSnoozed={loadPlantData} />
-                        <Button
-                          data-testid="task-complete-btn"
-                          size="sm"
-                          onClick={() => handleCompleteTask(task.id)}
-                        >
-                          Complete
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </Card>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                {[
+                  { label: 'This week', value: thisWeek },
+                  { label: 'This month', value: thisMonth },
+                  { label: 'Total done', value: totalDone },
+                  { label: 'Pending', value: pending },
+                ].map(({ label, value }) => (
+                  <Card key={label} className="p-4 text-center">
+                    <p className="text-3xl font-bold">{value}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{label}</p>
+                  </Card>
+                ))}
+              </div>
             );
-          })}
-        </div>
+          })()}
+        </>
       )}
 
-      {tasks.length > 0 && (() => {
-        const now = new Date();
-        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        const thisWeek = tasks.filter(
-          (t) => t.completedAt && new Date(t.completedAt) >= weekAgo
-        ).length;
-        const thisMonth = tasks.filter((t) => {
-          if (!t.completedAt) return false;
-          const d = new Date(t.completedAt);
-          return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-        }).length;
-        const totalDone = tasks.filter((t) => t.completedAt != null).length;
-        const pending = tasks.filter((t) => !t.completedAt && !t.deletedAt).length;
+      {activeTab === 'history' && (
+        <div className="mb-8">
+          {completedTasks.length === 0 ? (
+            <Card className="p-8 text-center">
+              <p className="text-muted-foreground">No care history yet</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Complete a task to start tracking care history.
+              </p>
+            </Card>
+          ) : (
+            (() => {
+              // Group tasks by month key, preserving descending order
+              const groups: { monthKey: string; tasks: CareTask[] }[] = [];
+              const groupMap = new Map<string, CareTask[]>();
+              for (const task of completedTasks) {
+                const key = task.completedAt ? getMonthGroupKey(task.completedAt) : 'Unknown';
+                if (!groupMap.has(key)) {
+                  groupMap.set(key, []);
+                  groups.push({ monthKey: key, tasks: groupMap.get(key)! });
+                }
+                groupMap.get(key)!.push(task);
+              }
 
-        return (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            {[
-              { label: 'This week', value: thisWeek },
-              { label: 'This month', value: thisMonth },
-              { label: 'Total done', value: totalDone },
-              { label: 'Pending', value: pending },
-            ].map(({ label, value }) => (
-              <Card key={label} className="p-4 text-center">
-                <p className="text-3xl font-bold">{value}</p>
-                <p className="text-sm text-muted-foreground mt-1">{label}</p>
-              </Card>
-            ))}
-          </div>
-        );
-      })()}
+              return (
+                <div className="space-y-6">
+                  {groups.map(({ monthKey, tasks: monthTasks }) => (
+                    <div key={monthKey}>
+                      <div className="flex items-center gap-3 mb-3">
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                          {monthKey}
+                        </h3>
+                        <span className="text-xs text-muted-foreground">
+                          — {monthTasks.length} {monthTasks.length === 1 ? 'task' : 'tasks'}
+                        </span>
+                      </div>
+                      <div className="space-y-2 pl-4 border-l-2 border-muted">
+                        {monthTasks.map((task) => (
+                          <Card key={task.id} className="p-4">
+                            <div className="flex items-start gap-3">
+                              <span className="text-xl flex-shrink-0" aria-hidden="true">
+                                {TASK_TYPE_ICONS[task.taskType]}
+                              </span>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between gap-2 flex-wrap">
+                                  <h4
+                                    className="font-medium break-words"
+                                    style={{ overflowWrap: 'anywhere' }}
+                                  >
+                                    {task.title}
+                                  </h4>
+                                  <span className="text-xs text-muted-foreground flex-shrink-0">
+                                    {task.completedAt ? formatCompletedAt(task.completedAt) : ''}
+                                  </span>
+                                </div>
+                                {task.description && (
+                                  <p
+                                    className="text-sm text-muted-foreground mt-1 break-words"
+                                    style={{ overflowWrap: 'anywhere' }}
+                                  >
+                                    {task.description}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()
+          )}
+        </div>
+      )}
 
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-2xl font-bold">Photos</h2>
