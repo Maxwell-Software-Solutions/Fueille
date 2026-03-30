@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -8,6 +9,26 @@ import { Button } from '@/components/ui/button';
  * Showcases upcoming premium features with "Coming Soon" status
  */
 export function PremiumSection() {
+  const [email, setEmail] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
+
+  const handleWaitlistSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.includes('@') || !email.includes('.')) return;
+
+    const stored = localStorage.getItem('fueille_waitlist');
+    const list: string[] = stored ? (JSON.parse(stored) as string[]) : [];
+
+    if (list.includes(email)) {
+      setAlreadyRegistered(true);
+    } else {
+      list.push(email);
+      localStorage.setItem('fueille_waitlist', JSON.stringify(list));
+      setSubmitted(true);
+    }
+  };
+
   const premiumFeatures = [
     {
       icon: '☁️',
@@ -79,9 +100,25 @@ export function PremiumSection() {
         <p className="text-base text-muted-foreground mb-5">
           Be the first to know when premium features launch
         </p>
-        <Button size="lg" disabled className="opacity-50 cursor-not-allowed whitespace-nowrap">
-          Join Waitlist (Coming Soon)
-        </Button>
+        {alreadyRegistered ? (
+          <p className="text-base font-medium">You&apos;re already on the list! 🌿</p>
+        ) : submitted ? (
+          <p className="text-base font-medium">You&apos;re on the list! We&apos;ll be in touch. 🌿</p>
+        ) : (
+          <form onSubmit={handleWaitlistSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="your@email.com"
+              required
+              className="flex-1 px-4 py-3 neu-pressed rounded-xl bg-background outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+            />
+            <Button type="submit" size="lg" className="whitespace-nowrap">
+              Join Waitlist
+            </Button>
+          </form>
+        )}
       </Card>
     </div>
   );

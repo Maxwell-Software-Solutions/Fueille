@@ -13,6 +13,7 @@ export default function PlantsPage() {
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [filterTagIds, setFilterTagIds] = useState<string[]>([]);
   const [plantTagMap, setPlantTagMap] = useState<Record<string, Tag[]>>({});
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     loadPlants();
@@ -52,6 +53,18 @@ export default function PlantsPage() {
     }
   }, [filterTagIds]);
 
+  const displayedPlants = searchQuery.trim()
+    ? plants.filter((p) => {
+        const q = searchQuery.toLowerCase();
+        return (
+          p.name.toLowerCase().includes(q) ||
+          (p.species ?? '').toLowerCase().includes(q) ||
+          (p.location ?? '').toLowerCase().includes(q) ||
+          (p.notes ?? '').toLowerCase().includes(q)
+        );
+      })
+    : plants;
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -67,6 +80,24 @@ export default function PlantsPage() {
         <Link href="/plants/new">
           <Button size="lg">+ Add Plant</Button>
         </Link>
+      </div>
+
+      <div className="relative mb-4">
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search by name, species, location..."
+          className="w-full px-4 py-3 pr-10 neu-pressed rounded-xl bg-background focus:neu-flat transition-all outline-none focus:ring-2 focus:ring-primary/50"
+        />
+        {searchQuery && (
+          <button
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            onClick={() => setSearchQuery('')}
+          >
+            ×
+          </button>
+        )}
       </div>
 
       {allTags.length > 0 && (
@@ -92,9 +123,16 @@ export default function PlantsPage() {
             <Button size="lg">Add Your First Plant</Button>
           </Link>
         </Card>
+      ) : displayedPlants.length === 0 ? (
+        <Card className="p-12 text-center">
+          <p className="text-2xl font-semibold mb-3">No plants match your search</p>
+          <p className="text-base text-muted-foreground">
+            Try a different search term or clear the filter.
+          </p>
+        </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {plants.map((plant) => (
+          {displayedPlants.map((plant) => (
             <Link key={plant.id} href={`/plants/${plant.id}`}>
               <Card className="p-5 neu-interactive cursor-pointer hover:neu-floating h-full">
                 <div className="flex items-start gap-4">

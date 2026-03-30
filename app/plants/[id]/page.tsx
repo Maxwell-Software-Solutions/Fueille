@@ -37,6 +37,7 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
   const [showPhotoCapture, setShowPhotoCapture] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isEditingDetails, setIsEditingDetails] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [editFormData, setEditFormData] = useState({
     name: '',
     species: '',
@@ -83,6 +84,21 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
       setEditTagIds(plantTags.map((t) => t.id));
     }
   }, [plant, isEditingDetails, plantTags]);
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setLightboxIndex(null);
+      } else if (e.key === 'ArrowLeft' && lightboxIndex > 0) {
+        setLightboxIndex(lightboxIndex - 1);
+      } else if (e.key === 'ArrowRight' && lightboxIndex < photos.length - 1) {
+        setLightboxIndex(lightboxIndex + 1);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [lightboxIndex, photos.length]);
 
   const handleDelete = async () => {
     if (!confirm('Delete this plant? This cannot be undone.')) return;
@@ -461,23 +477,63 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
                       </p>
                     )}
                   </div>
-                  {!task.completedAt && (
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <SnoozeMenu taskId={task.id} onSnoozed={loadPlantData} />
-                      <Button
-                        size="sm"
-                        onClick={() => handleCompleteTask(task.id)}
-                      >
-                        Complete
-                      </Button>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push(`/plants/${params.id}/tasks/${task.id}/edit`)}
+                    >
+                      Edit
+                    </Button>
+                    {!task.completedAt && (
+                      <>
+                        <SnoozeMenu taskId={task.id} onSnoozed={loadPlantData} />
+                        <Button
+                          size="sm"
+                          onClick={() => handleCompleteTask(task.id)}
+                        >
+                          Complete
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </Card>
             );
           })}
         </div>
       )}
+
+      {tasks.length > 0 && (() => {
+        const now = new Date();
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const thisWeek = tasks.filter(
+          (t) => t.completedAt && new Date(t.completedAt) >= weekAgo
+        ).length;
+        const thisMonth = tasks.filter((t) => {
+          if (!t.completedAt) return false;
+          const d = new Date(t.completedAt);
+          return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+        }).length;
+        const totalDone = tasks.filter((t) => t.completedAt != null).length;
+        const pending = tasks.filter((t) => !t.completedAt && !t.deletedAt).length;
+
+        return (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            {[
+              { label: 'This week', value: thisWeek },
+              { label: 'This month', value: thisMonth },
+              { label: 'Total done', value: totalDone },
+              { label: 'Pending', value: pending },
+            ].map(({ label, value }) => (
+              <Card key={label} className="p-4 text-center">
+                <p className="text-3xl font-bold">{value}</p>
+                <p className="text-sm text-muted-foreground mt-1">{label}</p>
+              </Card>
+            ))}
+          </div>
+        );
+      })()}
 
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-2xl font-bold">Photos</h2>
@@ -515,7 +571,7 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
         </Card>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {photos.map((photo) => {
+          {photos.map((photo, i) => {
             const photoUri = photo.localUri || photo.remoteUrl || '';
             const isCurrentThumbnail = plant?.thumbnailUrl === photoUri;
 
@@ -523,11 +579,13 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
               <Card
                 key={photo.id}
                 className={`overflow-hidden group relative ${
-                  isEditMode ? 'cursor-pointer hover:ring-2 hover:ring-primary' : ''
+                  isEditMode ? 'cursor-pointer hover:ring-2 hover:ring-primary' : 'cursor-pointer'
                 } ${isCurrentThumbnail && isEditMode ? 'ring-2 ring-primary' : ''}`}
                 onClick={() => {
                   if (isEditMode) {
                     handleSetThumbnail(photoUri);
+                  } else {
+                    setLightboxIndex(i);
                   }
                 }}
               >
@@ -543,7 +601,7 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
                     <Button
                       size="sm"
                       variant="destructive"
-                      onClick={() => handleDeletePhoto(photo.id)}
+                      onClick={(e) => { e.stopPropagation(); handleDeletePhoto(photo.id); }}
                     >
                       Delete
                     </Button>
@@ -572,6 +630,47 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
           }}
         />
       </Card>
+
+      {lightboxIndex !== null && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+          onClick={() => setLightboxIndex(null)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white text-3xl leading-none"
+            onClick={() => setLightboxIndex(null)}
+          >
+            ×
+          </button>
+          {lightboxIndex > 0 && (
+            <button
+              className="absolute left-4 text-white text-4xl"
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex - 1); }}
+            >
+              ‹
+            </button>
+          )}
+          {lightboxIndex < photos.length - 1 && (
+            <button
+              className="absolute right-16 text-white text-4xl"
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex + 1); }}
+            >
+              ›
+            </button>
+          )}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={photos[lightboxIndex]?.localUri}
+            alt="Plant photo"
+            className="max-h-[90vh] max-w-[90vw] object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <p className="absolute bottom-4 text-white/70 text-sm">
+            {photos[lightboxIndex]?.takenAt ? new Date(photos[lightboxIndex].takenAt).toLocaleDateString() : ''}
+            {' '}({lightboxIndex + 1}/{photos.length})
+          </p>
+        </div>
+      )}
     </div>
   );
 }

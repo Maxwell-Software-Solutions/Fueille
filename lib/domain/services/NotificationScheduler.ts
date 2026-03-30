@@ -116,6 +116,24 @@ export class NotificationScheduler {
     }, timeUntilDue);
 
     this.scheduledNotifications.set(task.id, timeoutId);
+
+    // Try to delegate to service worker for persistence across tab close
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller && task.dueAt) {
+      const msUntilDue = new Date(task.dueAt).getTime() - Date.now();
+      if (msUntilDue > 0) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'SCHEDULE_NOTIFICATION',
+          payload: {
+            title: `Time to ${task.taskType} your plant!`,
+            body: task.title,
+            tag: `task-${task.id}`,
+            timestamp: new Date(task.dueAt).getTime(),
+            url: `/plants/${task.plantId}`,
+          },
+        });
+      }
+    }
+
     return true;
   }
 
@@ -127,6 +145,14 @@ export class NotificationScheduler {
     if (timeoutId) {
       window.clearTimeout(timeoutId);
       this.scheduledNotifications.delete(taskId);
+    }
+
+    // Also cancel in the service worker
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'CANCEL_NOTIFICATION',
+        payload: { tag: `task-${taskId}` },
+      });
     }
   }
 
