@@ -83,6 +83,7 @@ export default function NewLayoutPage() {
             <div>
               <label className="block text-sm font-medium mb-2">Layout Name *</label>
               <input
+                data-testid="layout-name-input"
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -129,7 +130,7 @@ export default function NewLayoutPage() {
               >
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1">
+              <Button data-testid="create-layout-submit-btn" type="submit" className="flex-1">
                 Create Layout
               </Button>
             </div>

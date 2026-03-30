@@ -59,6 +59,7 @@ export default function NewPlantPage() {
               Plant Name *
             </label>
             <input
+              data-testid="plant-name-input"
               id="name"
               type="text"
               required
@@ -84,6 +85,7 @@ export default function NewPlantPage() {
               Species
             </label>
             <input
+              data-testid="plant-species-input"
               id="species"
               type="text"
               value={formData.species}
@@ -98,6 +100,7 @@ export default function NewPlantPage() {
               Location
             </label>
             <input
+              data-testid="plant-location-input"
               id="location"
               type="text"
               value={formData.location}
@@ -127,7 +130,7 @@ export default function NewPlantPage() {
           </div>
 
           <div className="flex gap-4 pt-6">
-            <Button type="submit" disabled={saving || !formData.name.trim()} size="lg">
+            <Button data-testid="save-plant-btn" type="submit" disabled={saving || !formData.name.trim()} size="lg">
               {saving ? 'Saving...' : 'Save Plant'}
             </Button>
             <Button

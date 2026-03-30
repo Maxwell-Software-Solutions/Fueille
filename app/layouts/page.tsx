@@ -34,7 +34,7 @@ export default function LayoutsPage() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Layout Maps</h1>
         <Link href="/layouts/new">
-          <Button>Create Layout</Button>
+          <Button data-testid="create-layout-btn">Create Layout</Button>
         </Link>
       </div>
 
@@ -51,7 +51,7 @@ export default function LayoutsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {layouts.map((layout) => (
             <Link key={layout.id} href={`/layouts/${layout.id}`}>
-              <Card className="hover:shadow-lg transition-all cursor-pointer overflow-hidden">
+              <Card data-testid="layout-card" className="hover:shadow-lg transition-all cursor-pointer overflow-hidden">
                 <div className="w-full h-48 bg-muted flex items-center justify-center overflow-hidden">
                   {layout.thumbnailUri ? (
                     // eslint-disable-next-line @next/next/no-img-element

@@ -155,12 +155,12 @@ export default function Home() {
           <p className="text-base text-muted-foreground">No tasks due today</p>
         </Card>
       ) : (
-        <div className="space-y-4 mb-8">
+        <div data-testid="due-tasks-section" className="space-y-4 mb-8">
           {dueTasks.map((task) => {
             const isOverdue = task.dueAt && new Date(task.dueAt) < new Date();
 
             return (
-              <Card key={task.id} className="p-5">
+              <Card key={task.id} data-testid="task-card" className="p-5">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-start gap-4 flex-1">
                     <div className="w-12 h-12 neu-pressed rounded-xl flex items-center justify-center flex-shrink-0">
@@ -194,7 +194,7 @@ export default function Home() {
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <SnoozeMenu taskId={task.id} onSnoozed={loadTasks} />
-                    <Button size="default" onClick={() => handleComplete(task.id)}>
+                    <Button data-testid="complete-task-btn" size="default" onClick={() => handleComplete(task.id)}>
                       Complete
                     </Button>
                   </div>
@@ -228,7 +228,7 @@ export default function Home() {
           </Link>
         </Card>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div data-testid="layouts-section" className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {layouts.map((layout) => (
             <Link key={layout.id} href={`/layouts/${layout.id}`}>
               <Card className="neu-interactive cursor-pointer hover:neu-floating overflow-hidden">

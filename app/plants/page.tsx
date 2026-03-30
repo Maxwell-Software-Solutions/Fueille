@@ -78,12 +78,13 @@ export default function PlantsPage() {
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">My Plants</h1>
         <Link href="/plants/new">
-          <Button size="lg">+ Add Plant</Button>
+          <Button data-testid="add-plant-btn" size="lg">+ Add Plant</Button>
         </Link>
       </div>
 
       <div className="relative mb-4">
         <input
+          data-testid="plant-search-input"
           type="search"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -134,7 +135,7 @@ export default function PlantsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {displayedPlants.map((plant) => (
             <Link key={plant.id} href={`/plants/${plant.id}`}>
-              <Card className="p-5 neu-interactive cursor-pointer hover:neu-floating h-full">
+              <Card data-testid="plant-card" className="p-5 neu-interactive cursor-pointer hover:neu-floating h-full">
                 <div className="flex items-start gap-4">
                   <div
                     className={`w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden ${

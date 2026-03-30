@@ -404,7 +404,7 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
 
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-2xl font-bold">Care Tasks</h2>
-        <Button onClick={() => router.push(`/plants/${plant.id}/tasks/new`)}>+ Add Task</Button>
+        <Button data-testid="add-task-btn" onClick={() => router.push(`/plants/${plant.id}/tasks/new`)}>+ Add Task</Button>
       </div>
 
       {tasks.length === 0 ? (
@@ -424,7 +424,7 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
               new Date(task.dueAt) <= new Date(Date.now() + 86400000);
 
             return (
-              <Card key={task.id} className="p-4">
+              <Card key={task.id} data-testid="task-card" className="p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -479,6 +479,7 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <Button
+                      data-testid="task-edit-btn"
                       variant="outline"
                       size="sm"
                       onClick={() => router.push(`/plants/${params.id}/tasks/${task.id}/edit`)}
@@ -489,6 +490,7 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
                       <>
                         <SnoozeMenu taskId={task.id} onSnoozed={loadPlantData} />
                         <Button
+                          data-testid="task-complete-btn"
                           size="sm"
                           onClick={() => handleCompleteTask(task.id)}
                         >
@@ -578,6 +580,7 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
             return (
               <Card
                 key={photo.id}
+                data-testid="photo-item"
                 className={`overflow-hidden group relative ${
                   isEditMode ? 'cursor-pointer hover:ring-2 hover:ring-primary' : 'cursor-pointer'
                 } ${isCurrentThumbnail && isEditMode ? 'ring-2 ring-primary' : ''}`}
@@ -660,7 +663,7 @@ export default function PlantDetailPage({ params }: { params: { id: string } }) 
           )}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={photos[lightboxIndex]?.localUri}
+            src={photos[lightboxIndex]?.localUri || photos[lightboxIndex]?.remoteUrl}
             alt="Plant photo"
             className="max-h-[90vh] max-w-[90vw] object-contain"
             onClick={(e) => e.stopPropagation()}
