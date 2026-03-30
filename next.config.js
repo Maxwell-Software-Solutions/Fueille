@@ -2,6 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  env: {
+    NEXT_PUBLIC_APP_VERSION: require('./package.json').version,
+  },
   // Prevent @huggingface/transformers from being bundled on the server —
   // it is a browser-only package and uses import.meta / WASM which Node cannot process.
   serverExternalPackages: ['@huggingface/transformers', 'onnxruntime-web'],

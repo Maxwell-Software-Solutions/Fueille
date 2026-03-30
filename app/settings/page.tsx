@@ -5,6 +5,11 @@ import { useRouter } from 'next/navigation';
 import { getDatabase, notificationScheduler } from '@/lib/domain';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { CHANGELOG } from '@/lib/changelog';
+
+const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? '1.0.0';
+
+type ThemeSetting = 'system' | 'light' | 'dark';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -12,6 +17,8 @@ export default function SettingsPage() {
   const [permissionStatus, setPermissionStatus] = useState<string>('default');
   const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [importMessage, setImportMessage] = useState('');
+  const [showAllVersions, setShowAllVersions] = useState(false);
+  const [themeSetting, setThemeSetting] = useState<ThemeSetting>('system');
 
   useEffect(() => {
     const enabled = localStorage.getItem('notifications_enabled');
@@ -19,7 +26,25 @@ export default function SettingsPage() {
     if (typeof window !== 'undefined' && 'Notification' in window) {
       setPermissionStatus(Notification.permission);
     }
+    const stored = localStorage.getItem('theme');
+    if (stored === 'light' || stored === 'dark') {
+      setThemeSetting(stored);
+    } else {
+      setThemeSetting('system');
+    }
   }, []);
+
+  const handleThemeChange = (value: ThemeSetting) => {
+    setThemeSetting(value);
+    if (value === 'system') {
+      localStorage.removeItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle('dark', prefersDark);
+    } else {
+      localStorage.setItem('theme', value);
+      document.documentElement.classList.toggle('dark', value === 'dark');
+    }
+  };
 
   const handleNotificationsToggle = () => {
     const newValue = !notificationsEnabled;
@@ -182,6 +207,26 @@ export default function SettingsPage() {
         </div>
       </Card>
 
+      {/* Appearance */}
+      <Card className="p-6 mb-6">
+        <h2 className="text-xl font-semibold mb-4">Appearance</h2>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="font-medium">Theme</p>
+            <p className="text-sm text-muted-foreground">Choose light, dark, or follow the system</p>
+          </div>
+          <select
+            value={themeSetting}
+            onChange={(e) => handleThemeChange(e.target.value as ThemeSetting)}
+            className="rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="system">System</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </div>
+      </Card>
+
       {/* Data Management */}
       <Card className="p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">Data Management</h2>
@@ -225,7 +270,7 @@ export default function SettingsPage() {
       </Card>
 
       {/* About */}
-      <Card className="p-6">
+      <Card className="p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">About</h2>
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -234,7 +279,7 @@ export default function SettingsPage() {
           </div>
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">Version</p>
-            <p className="text-sm font-medium">1.0.0</p>
+            <p className="text-sm font-medium">{APP_VERSION}</p>
           </div>
           <div className="pt-2">
             <Button variant="outline" size="sm" onClick={handleCheckForUpdates}>
@@ -242,6 +287,43 @@ export default function SettingsPage() {
             </Button>
           </div>
         </div>
+      </Card>
+
+      {/* What's New */}
+      <Card className="p-6">
+        <h2 className="text-xl font-semibold mb-4">What&apos;s New</h2>
+        {(() => {
+          const currentEntry = CHANGELOG.find((e) => e.version === APP_VERSION) ?? CHANGELOG[0];
+          const entriesToShow = showAllVersions ? CHANGELOG : (currentEntry ? [currentEntry] : []);
+          return (
+            <div className="space-y-6">
+              {entriesToShow.map((entry) => (
+                <div key={entry.version}>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="font-semibold text-sm">v{entry.version}</span>
+                    <span className="text-xs text-muted-foreground">{entry.date}</span>
+                  </div>
+                  <ul className="space-y-1">
+                    {entry.changes.map((change, i) => (
+                      <li key={i} className="text-sm text-muted-foreground flex gap-2">
+                        <span className="shrink-0">&#x2022;</span>
+                        <span>{change}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+              {CHANGELOG.length > 1 && (
+                <button
+                  onClick={() => setShowAllVersions((v) => !v)}
+                  className="text-sm text-primary underline-offset-4 hover:underline"
+                >
+                  {showAllVersions ? 'Show current version only' : 'See all versions'}
+                </button>
+              )}
+            </div>
+          );
+        })()}
       </Card>
     </div>
   );

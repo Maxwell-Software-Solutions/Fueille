@@ -44,6 +44,8 @@ const ErrorBoundary = dynamic(
   }
 );
 
+const InstallPrompt = dynamic(() => import('@/components/InstallPrompt'), { ssr: false });
+
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
@@ -76,7 +78,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const showInlineAI = process.env.NEXT_PUBLIC_INLINE_AI === '1';
 
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className="h-full" suppressHydrationWarning>
+      <head>
+        {/* Inline script runs synchronously before CSS paint to prevent dark mode flash */}
+        <script dangerouslySetInnerHTML={{ __html: `
+(function() {
+  try {
+    var stored = localStorage.getItem('theme');
+    if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  } catch(e) {}
+})();
+` }} />
+      </head>
       <body className={`${inter.className} flex min-h-screen flex-col`}>
         <ErrorBoundary>
           <header className="neu-flat border-b border-border/30">
@@ -120,6 +137,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <DatabaseInitializer />
           {/* Dev-only seed panel for mock data management */}
           {SeedPanel && <SeedPanel />}
+          {/* PWA install prompt */}
+          <InstallPrompt />
         </ErrorBoundary>
       </body>
     </html>
