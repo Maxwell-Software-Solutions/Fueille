@@ -47,7 +47,14 @@ function makeTask(overrides: Partial<CareTask> = {}): CareTask {
 // Setup / teardown of window globals
 // ---------------------------------------------------------------------------
 
-let MockNotification: jest.Mock;
+// Type for our mock Notification constructor: callable as jest.Mock,
+// but also exposes the static members Notification has (.permission, .requestPermission).
+type MockNotificationType = jest.Mock & {
+  permission: NotificationPermission;
+  requestPermission: jest.Mock;
+};
+
+let MockNotification: MockNotificationType;
 
 beforeEach(() => {
   // Reset timers and mocks
@@ -58,7 +65,7 @@ beforeEach(() => {
   MockNotification = jest.fn().mockImplementation(() => ({
     close: jest.fn(),
     onclick: null,
-  }));
+  })) as unknown as MockNotificationType;
   MockNotification.permission = 'default' as NotificationPermission;
   MockNotification.requestPermission = jest.fn().mockResolvedValue('granted');
 
