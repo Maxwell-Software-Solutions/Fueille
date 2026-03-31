@@ -60,7 +60,7 @@ describe('Viewport', () => {
       width: 'device-width',
       initialScale: 1,
       maximumScale: 5,
-      themeColor: '#000000',
+      themeColor: '#2D5A27',
     });
   });
 });

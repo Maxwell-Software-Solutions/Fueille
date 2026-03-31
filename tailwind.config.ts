@@ -58,7 +58,15 @@ const config: Config = {
   				'3': 'hsl(var(--chart-3))',
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
-  			}
+  			},
+  			sage: '#507647',
+  			cream: '#F5F0E8',
+  			coral: '#E07A5F',
+  			'warm-white': '#FAFAF7',
+  			'deep-green': '#2D5A27',
+  			'info-blue': '#5B9BD5',
+  			'success-green': '#4CAF50',
+  			'warning-amber': '#FFC107',
   		}
   	}
   },
