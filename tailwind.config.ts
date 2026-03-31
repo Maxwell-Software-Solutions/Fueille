@@ -59,7 +59,7 @@ const config: Config = {
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
   			},
-  			sage: '#87A878',
+  			sage: '#507647',
   			cream: '#F5F0E8',
   			coral: '#E07A5F',
   			'warm-white': '#FAFAF7',

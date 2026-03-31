@@ -171,10 +171,10 @@ export default function Home() {
       )}
 
       <div className="mb-6">
-        <div className="flex items-start justify-between gap-4 mb-2">
+        <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
           <h2 className="text-2xl font-bold">Today&apos;s Tasks</h2>
           {dueTasks.length >= 2 && (
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -214,8 +214,8 @@ export default function Home() {
 
             return (
               <Card key={task.id} data-testid="task-card" className={`p-5 ${isOverdue ? 'border-l-4 border-l-coral' : ''}`}>
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-start gap-4 flex-1">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="flex items-start gap-4 flex-1 min-w-0">
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${isOverdue ? 'bg-coral/10' : 'bg-primary/10'}`}>
                       <span className="text-2xl">🌱</span>
                     </div>
@@ -226,7 +226,7 @@ export default function Home() {
                           {task.taskType}
                         </span>
                         {isOverdue && (
-                          <span className="text-xs px-3 py-1 bg-coral/15 text-coral rounded-full font-medium">
+                          <span className="text-xs px-3 py-1 bg-destructive/10 text-destructive rounded-full font-medium">
                             Overdue
                           </span>
                         )}
@@ -245,7 +245,7 @@ export default function Home() {
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-2 self-end sm:self-center flex-shrink-0">
                     <SnoozeMenu taskId={task.id} onSnoozed={loadTasks} />
                     <Button data-testid="complete-task-btn" size="default" onClick={() => handleComplete(task.id)}>
                       Complete

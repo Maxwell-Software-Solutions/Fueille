@@ -71,6 +71,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.1",
     "@faker-js/faker": "^10.3.0",
     "@lhci/cli": "^0.13.0",
     "@playwright/test": "^1.56.1",
