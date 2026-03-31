@@ -23,17 +23,17 @@ body {
   --neu-distance: 8px;
   --neu-blur: 16px;
   --neu-size: 280px;
-  --gradient-colors: linear-gradient(to right, #4B0082, #FFA500);
-  
+  --gradient-colors: linear-gradient(to right, #2D5A27, #87A878);
+
   /* Light mode neumorphic colors */
-  --neu-bg-light: hsl(220, 100%, 98%);
-  --neu-shadow-dark-light: #b8bcc4;
+  --neu-bg-light: #FAFAF7;
+  --neu-shadow-dark-light: #d4cfc5;
   --neu-shadow-light-light: #ffffff;
-  
+
   /* Dark mode neumorphic colors */
-  --neu-bg-dark: #2c3e50;
-  --neu-shadow-dark-dark: #1a252f;
-  --neu-shadow-light-dark: #3e5771;
+  --neu-bg-dark: #1a2e1a;
+  --neu-shadow-dark-dark: #0f1c0f;
+  --neu-shadow-light-dark: #253825;
 }
 
 /* Neumorphic elevation classes */
@@ -109,14 +109,14 @@ body {
 
 .gradient-border {
   border: 2px solid transparent;
-  background: linear-gradient(#fff, #fff) padding-box,
+  background: linear-gradient(#FAFAF7, #FAFAF7) padding-box,
               var(--gradient-colors) border-box;
   border-radius: 0.5rem;
 }
 
 @media (prefers-color-scheme: dark) {
   .gradient-border {
-    background: linear-gradient(#000, #000) padding-box,
+    background: linear-gradient(#1a2e1a, #1a2e1a) padding-box,
                 var(--gradient-colors) border-box;
   }
 }
@@ -125,47 +125,47 @@ body {
 
 @layer base {
   :root {
-    --background: 224 30% 92%;
-    --foreground: 222 47% 11%;
-    --card: 224 30% 92%;
-    --card-foreground: 222 47% 11%;
-    --popover: 224 30% 92%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 142 71% 38%;
-    --primary-foreground: 222 47% 11%;
-    --secondary: 220 14% 72%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 220 14% 82%;
-    --muted-foreground: 215 20% 35%;
-    --accent: 142 71% 38%;
-    --accent-foreground: 222 47% 11%;
+    --background: 50 33% 97%;
+    --foreground: 114 37% 25%;
+    --card: 37 45% 93%;
+    --card-foreground: 114 37% 25%;
+    --popover: 37 45% 93%;
+    --popover-foreground: 114 37% 25%;
+    --primary: 114 37% 25%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 108 20% 56%;
+    --secondary-foreground: 114 37% 25%;
+    --muted: 37 30% 90%;
+    --muted-foreground: 108 20% 56%;
+    --accent: 11 67% 63%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 48%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 14% 65%;
-    --input: 220 14% 82%;
-    --ring: 142 71% 38%;
-    --radius: 1rem;
+    --border: 108 15% 78%;
+    --input: 37 30% 90%;
+    --ring: 114 37% 25%;
+    --radius: 0.75rem;
   }
   .dark {
-    --background: 210 29% 24%;
-    --foreground: 0 0% 98%;
-    --card: 210 29% 24%;
-    --card-foreground: 0 0% 98%;
-    --popover: 210 29% 24%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 142 71% 50%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 210 29% 18%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 210 29% 18%;
-    --muted-foreground: 215 20% 75%;
-    --accent: 142 71% 50%;
-    --accent-foreground: 0 0% 98%;
+    --background: 114 30% 12%;
+    --foreground: 50 33% 95%;
+    --card: 114 25% 16%;
+    --card-foreground: 50 33% 95%;
+    --popover: 114 25% 16%;
+    --popover-foreground: 50 33% 95%;
+    --primary: 114 37% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 108 15% 35%;
+    --secondary-foreground: 50 33% 90%;
+    --muted: 114 20% 18%;
+    --muted-foreground: 108 15% 55%;
+    --accent: 11 67% 63%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 45%;
     --destructive-foreground: 0 0% 100%;
-    --border: 210 29% 35%;
-    --input: 210 29% 18%;
-    --ring: 142 71% 50%;
+    --border: 114 15% 25%;
+    --input: 114 20% 18%;
+    --ring: 114 37% 45%;
   }
 }
 

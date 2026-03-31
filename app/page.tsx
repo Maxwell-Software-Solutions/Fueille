@@ -147,44 +147,28 @@ export default function Home() {
 
   return (
     <main className="container mx-auto px-6 py-8 max-w-7xl" suppressHydrationWarning>
-      {showWelcome && (
-        <div className="mb-8 transition-opacity duration-500">
-          <h1 className="text-3xl font-bold mb-3">Welcome to Fueille</h1>
-          <p className="text-base text-muted-foreground">Keep your plants healthy and thriving</p>
-        </div>
-      )}
+      <div className="mb-6">
+        <p className="text-sm text-muted-foreground uppercase tracking-wider mb-1">
+          {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+        </p>
+        <h1 className="text-3xl font-bold">Good morning</h1>
+        {showWelcome && (
+          <p className="text-base text-muted-foreground mt-1">Welcome to Fueille</p>
+        )}
+      </div>
 
       <NotificationSetup />
 
-      <div className="grid md:grid-cols-2 gap-6 mb-8">
-        <Link href="/plants">
-          <Card className="p-6 neu-interactive cursor-pointer hover:neu-floating">
-            <div className="flex items-center gap-5">
-              <div className="w-14 h-14 neu-pressed rounded-2xl flex items-center justify-center">
-                <span className="text-3xl">🌿</span>
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold mb-1">My Plants</h2>
-                <p className="text-sm text-muted-foreground">View and manage your plants</p>
-              </div>
-            </div>
-          </Card>
-        </Link>
-
-        <Link href="/plants/new">
-          <Card className="p-6 neu-interactive cursor-pointer hover:neu-floating">
-            <div className="flex items-center gap-5">
-              <div className="w-14 h-14 neu-pressed rounded-2xl flex items-center justify-center">
-                <span className="text-3xl">➕</span>
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold mb-1">Add Plant</h2>
-                <p className="text-sm text-muted-foreground">Track a new plant</p>
-              </div>
-            </div>
-          </Card>
-        </Link>
-      </div>
+      {dueTasks.length > 0 && (
+        <div className="flex gap-3 mb-6 overflow-x-auto pb-1">
+          <div className="flex-shrink-0 px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-medium">
+            {dueTasks.length} task{dueTasks.length !== 1 ? 's' : ''} due
+          </div>
+          <div className="flex-shrink-0 px-4 py-2 rounded-full bg-card text-sm font-medium">
+            {dueTasks.filter(t => t.dueAt && new Date(t.dueAt) < new Date()).length} overdue
+          </div>
+        </div>
+      )}
 
       <div className="mb-6">
         <div className="flex items-start justify-between gap-4 mb-2">
@@ -229,20 +213,20 @@ export default function Home() {
             const isOverdue = task.dueAt && new Date(task.dueAt) < new Date();
 
             return (
-              <Card key={task.id} data-testid="task-card" className="p-5">
+              <Card key={task.id} data-testid="task-card" className={`p-5 ${isOverdue ? 'border-l-4 border-l-coral' : ''}`}>
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-start gap-4 flex-1">
-                    <div className="w-12 h-12 neu-pressed rounded-xl flex items-center justify-center flex-shrink-0">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${isOverdue ? 'bg-coral/10' : 'bg-primary/10'}`}>
                       <span className="text-2xl">🌱</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <h3 className="font-semibold text-base">{task.title}</h3>
-                        <span className="text-xs px-3 py-1 neu-pressed rounded-lg font-medium">
+                        <span className="text-xs px-3 py-1 rounded-full bg-muted font-medium">
                           {task.taskType}
                         </span>
                         {isOverdue && (
-                          <span className="text-xs px-3 py-1 bg-red-100 text-red-700 rounded-lg font-medium">
+                          <span className="text-xs px-3 py-1 bg-coral/15 text-coral rounded-full font-medium">
                             Overdue
                           </span>
                         )}

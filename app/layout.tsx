@@ -5,7 +5,7 @@ import AiInlineRequest from '@/components/AiInlineRequest';
 import Footer from '@/components/Footer';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { BookOpen, Settings } from 'lucide-react';
+import { BottomNav } from '@/components/BottomNav';
 
 const SeedPanel =
   process.env.NODE_ENV === 'development'
@@ -70,7 +70,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
-  themeColor: '#000000',
+  themeColor: '#2D5A27',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -96,40 +96,27 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${inter.className} flex min-h-screen flex-col`}>
         <ErrorBoundary>
-          <header className="neu-flat border-b border-border/30">
+          <header className="sticky top-0 z-40 border-b border-border/20 bg-background/80 backdrop-blur-lg">
             <div className="container mx-auto px-6 py-3 flex items-center justify-between max-w-7xl">
               <Link
                 href="/"
-                className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+                className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo.svg" alt="Fueille Logo" className="h-12 w-12 logo-light-green" />
-                <h1
-                  className="text-3xl font-bold tracking-tight"
-                  style={{
-                    background: 'linear-gradient(to right, #90EE90, #228B22)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}
-                >
+                <img src="/logo.svg" alt="Fueille Logo" className="h-8 w-8 logo-light-green" />
+                <h1 className="text-xl font-semibold italic text-primary">
                   Fueille
                 </h1>
               </Link>
               <div className="flex items-center gap-2">
-                <Link href="/plant-library" className="p-2 rounded-lg hover:bg-muted transition-colors" aria-label="Plant Care Library">
-                  <BookOpen size={20} />
-                </Link>
-                <Link href="/settings" className="p-2 rounded-lg hover:bg-muted transition-colors" aria-label="Settings">
-                  <Settings size={20} />
-                </Link>
                 <ThemeToggle />
               </div>
             </div>
           </header>
           <OfflineIndicator />
-          <div className="flex-1">{children}</div>
+          <div className="flex-1 pb-20">{children}</div>
           <Footer />
+          <BottomNav />
           {showInlineAI && <AiInlineRequest />}
           {/* Service worker registration for PWA + mobile wrapper bridge hookup */}
           <ServiceWorkerRegister />
