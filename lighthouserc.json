@@ -1,14 +1,14 @@
 {
   "ci": {
     "collect": {
-      "startServerCommand": "pnpm build && pnpm start",
-      "startServerReadyPattern": "started server on|Local:",
+      "startServerCommand": "pnpm start",
+      "startServerReadyPattern": "Ready in",
       "url": ["http://localhost:3000"],
       "numberOfRuns": 3,
       "settings": {
         "emulatedFormFactor": "mobile",
         "onlyCategories": ["performance", "accessibility", "best-practices", "seo"],
-        "chromeFlags": "--headless --disable-extensions --no-sandbox --disable-dev-shm-usage"
+        "chromeFlags": "--headless=new --disable-extensions --no-sandbox --disable-dev-shm-usage --disable-gpu"
       }
     },
     "assert": {
