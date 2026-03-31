@@ -36,45 +36,37 @@ body {
   --neu-shadow-light-dark: #253825;
 }
 
-/* Neumorphic elevation classes */
+/* Neumorphic elevation classes — shadow only, backgrounds via Tailwind */
 .neu-flat {
-  background-color: var(--neu-bg-light);
   box-shadow: none;
 }
 
 .neu-pressed {
-  background-color: var(--neu-bg-light);
   box-shadow: inset 5px 5px 10px var(--neu-shadow-dark-light), inset -5px -5px 10px var(--neu-shadow-light-light);
 }
 
 .neu-raised {
-  background-color: var(--neu-bg-light);
   box-shadow: 8px 8px 16px var(--neu-shadow-dark-light), -8px -8px 16px var(--neu-shadow-light-light);
 }
 
 .neu-floating {
-  background-color: var(--neu-bg-light);
   box-shadow: 12px 12px 24px var(--neu-shadow-dark-light), -12px -12px 24px var(--neu-shadow-light-light);
 }
 
 /* Dark mode neumorphic */
 .dark .neu-flat {
-  background-color: var(--neu-bg-dark);
   box-shadow: none;
 }
 
 .dark .neu-pressed {
-  background-color: var(--neu-bg-dark);
   box-shadow: inset 5px 5px 10px var(--neu-shadow-dark-dark), inset -5px -5px 10px var(--neu-shadow-light-dark);
 }
 
 .dark .neu-raised {
-  background-color: var(--neu-bg-dark);
   box-shadow: 8px 8px 16px var(--neu-shadow-dark-dark), -8px -8px 16px var(--neu-shadow-light-dark);
 }
 
 .dark .neu-floating {
-  background-color: var(--neu-bg-dark);
   box-shadow: 12px 12px 24px var(--neu-shadow-dark-dark), -12px -12px 24px var(--neu-shadow-light-dark);
 }
 

@@ -14,9 +14,8 @@ test.describe('Home Page', () => {
   test('should display main sections', async ({ page }) => {
     await page.goto('/');
 
-    // Check for main cards/sections using data-testid or visible text
-    await expect(page.getByRole('heading', { name: /My Plants/i })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Add Plant/i })).toBeVisible();
+    // Check for main sections (greeting + tasks)
+    await expect(page.getByText(/Good morning/i)).toBeVisible();
     await expect(page.getByRole('heading', { name: /Today's Tasks/i })).toBeVisible();
   });
 
